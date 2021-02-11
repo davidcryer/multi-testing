@@ -17,7 +17,7 @@ import uk.co.davidcryer.multitesting.simple.SimpleService
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 
 @WebMvcTest(controllers = [SimpleController])
-class SimpleControllerApiSpec extends Specification {
+class SimpleControllerHttpSpec extends Specification {
 
     @Autowired
     MockMvc mockMvc
