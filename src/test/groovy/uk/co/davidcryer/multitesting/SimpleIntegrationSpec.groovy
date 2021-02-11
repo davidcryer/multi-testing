@@ -62,7 +62,7 @@ class SimpleIntegrationSpec extends Specification {
 
 
         when:
-        def response = template.getForEntity"/simple/get-id", SimpleRequest
+        def response = template.getForEntity"/simple/${simple.id}", SimpleRequest
 
         then:
         response.statusCode == HttpStatus.OK

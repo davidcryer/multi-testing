@@ -7,9 +7,9 @@ import static org.springframework.http.MediaType.APPLICATION_JSON
 
 class Requests {
 
-    static def post(String content) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType APPLICATION_JSON;
-        return new HttpEntity<String>(content ,headers);
+    static def post(Object content) {
+        def headers = new HttpHeaders()
+        headers.setContentType APPLICATION_JSON
+        return new HttpEntity<>(content ,headers)
     }
 }
