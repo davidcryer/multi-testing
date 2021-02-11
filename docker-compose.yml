@@ -1,0 +1,57 @@
+version: '3.6'
+services:
+  app:
+    image: "eu.gcr.io/at-artefacts/ssp-demo-application-architecture"
+    build:
+      context: .
+      args:
+        GO_DEPENDENCY_LABEL_BASE_JAVA_11: "${GO_DEPENDENCY_LABEL_BASE_JAVA_11:-latest}"
+    ports:
+      - "8088:8088"
+  db:
+    image: "postgres:11"
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=demo
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=demo
+  zoo1:
+    image: zookeeper:3.5
+    container_name: zoo1
+    restart: always
+    hostname: zoo1
+    environment:
+      ZOO_MY_ID: 1
+      ZOO_SERVERS: server.1=0.0.0.0:2888:3888;2181
+  kafka:
+    image: wurstmeister/kafka
+    hostname: localhost
+    ports:
+      - "9093:9093"
+      - "9092:9092"
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zoo1:2181
+      KAFKA_LISTENERS: INTERNAL://kafka:9092,EXTERNAL://:9093
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:9092,EXTERNAL://:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_ADVERTISED_PORT: 9092
+      KAFKA_CREATE_TOPICS: "location.postcode-address.public.compacted.v1:1:1"
+    depends_on:
+      - zoo1
+  kafka-schema-registry:
+    restart: always
+    hostname: schema-registry
+    domainname: kafka.svc.cluster.local
+    image: eu.gcr.io/at-artefacts/at-kafka-schema-registry:latest
+    depends_on:
+      - zoo1
+      - kafka
+    environment:
+      LOG_LEVEL: INFO
+      KAFKA_ZOOKEEPER_CONNECT: zoo1:2181
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry.kafka.svc.cluster.local
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: kafka:9092
+    ports:
+      - 9091:8081
