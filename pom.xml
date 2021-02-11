@@ -3,9 +3,9 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>uk.co.davidcryer</groupId>
-	<artifactId>New-Application-Architecture</artifactId>
+	<artifactId>multi-testing</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>New-Application-Architecture</name>
+	<name>multi-testing</name>
 	<description>Demo project for new application architecture</description>
 	<properties>
 		<java.version>11</java.version>
