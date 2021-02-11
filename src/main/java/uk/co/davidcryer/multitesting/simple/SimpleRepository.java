@@ -15,7 +15,7 @@ import static uk.co.davidcryer.multitesting.generated.Tables.SIMPLE;
 public class SimpleRepository {
     private final DSLContext dslContext;
 
-    public Simple create(Simple simple) {
+    public Simple add(Simple simple) {
         SimpleRecord record = dslContext.newRecord(SIMPLE, simple);
         record.store();
         return record.into(Simple.class);

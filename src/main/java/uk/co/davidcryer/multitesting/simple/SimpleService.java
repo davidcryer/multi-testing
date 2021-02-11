@@ -13,7 +13,7 @@ public class SimpleService {
     SimpleRequest create(SimpleRequest request) {
         var unsavedSimple = new Simple();
         unsavedSimple.setName(request.getName());
-        var savedSimple = repository.create(unsavedSimple);
+        var savedSimple = repository.add(unsavedSimple);
         return toRequest(savedSimple);
     }
 

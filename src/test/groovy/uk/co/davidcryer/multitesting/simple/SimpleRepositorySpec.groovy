@@ -1,6 +1,6 @@
 package uk.co.davidcryer.multitesting.simple
 
-import org.jooq.DSLContext
+
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jooq.JooqTest
 import org.springframework.context.annotation.Import
@@ -17,7 +17,7 @@ class SimpleRepositorySpec extends Specification {
 
     def "add simple returns with generated id"() {
         when:
-        def simple = repository.create(new Simple(null, "test-name"))
+        def simple = repository.add(new Simple(null, "test-name"))
 
         then:
         verifyAll(simple) {

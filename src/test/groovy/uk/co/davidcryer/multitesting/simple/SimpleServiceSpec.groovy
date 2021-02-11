@@ -9,7 +9,7 @@ class SimpleServiceSpec extends Specification {
 
     def "create simple"() {
         given:
-        repository.create(_ as Simple) >> { Simple simple -> simple.setId(1); simple }
+        repository.add(_ as Simple) >> { Simple simple -> simple.setId(1); simple }
 
         when:
         def response = service.create new SimpleRequest(null, "test-name")
