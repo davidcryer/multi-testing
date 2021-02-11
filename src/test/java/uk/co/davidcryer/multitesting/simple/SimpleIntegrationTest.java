@@ -1,4 +1,4 @@
-package uk.co.davidcryer.multitesting;
+package uk.co.davidcryer.multitesting.simple;
 
 import org.jooq.DSLContext;
 import org.junit.After;
@@ -7,19 +7,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.co.davidcryer.multitesting.generated.tables.pojos.Simple;
-import uk.co.davidcryer.multitesting.generated.tables.records.SimpleRecord;
-import uk.co.davidcryer.multitesting.simple.SimpleRequest;
 import uk.co.davidcryer.multitesting.utils.Requests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.jooq.impl.DSL.trueCondition;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static uk.co.davidcryer.multitesting.generated.tables.Simple.SIMPLE;
 
 @ExtendWith(SpringExtension.class)

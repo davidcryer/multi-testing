@@ -10,10 +10,19 @@ import uk.co.davidcryer.multitesting.generated.tables.pojos.Simple;
 public class SimpleService {
     private final SimpleRepository repository;
 
-    public SimpleRequest create(SimpleRequest request) {
-        Simple unsavedSimple = new Simple();
+    SimpleRequest create(SimpleRequest request) {
+        var unsavedSimple = new Simple();
         unsavedSimple.setName(request.getName());
-        Simple savedSimple = repository.create(unsavedSimple);
-        return new SimpleRequest(savedSimple.getId(), savedSimple.getName());
+        var savedSimple = repository.create(unsavedSimple);
+        return toRequest(savedSimple);
+    }
+
+    SimpleRequest get(Integer id) {
+        var simple = repository.get(id);
+        return toRequest(simple);
+    }
+
+    private static SimpleRequest toRequest(Simple simple) {
+        return new SimpleRequest(simple.getId(), simple.getName());
     }
 }

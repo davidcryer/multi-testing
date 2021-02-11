@@ -26,10 +26,7 @@ class SimpleControllerHttpSpec extends Specification {
 
     def "post mapping"() {
         given:
-        simpleService.create(_ as SimpleRequest) >> { SimpleRequest request ->
-            request.setId(1)
-            request
-        }
+        simpleService.create(_ as SimpleRequest) >> { SimpleRequest request -> request.setId(1); request }
 
         when:
         def response = mockMvc.perform(
@@ -52,7 +49,6 @@ class SimpleControllerHttpSpec extends Specification {
     "name": "test-name-post"
 }
 """.trim()
-
     }
 
     @TestConfiguration

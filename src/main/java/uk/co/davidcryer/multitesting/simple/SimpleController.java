@@ -9,11 +9,16 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/simple")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class SimpleController {
-    private final SimpleService simpleService;
+    private final SimpleService service;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public SimpleRequest create(@RequestBody SimpleRequest request) {
-        return simpleService.create(request);
+        return service.create(request);
+    }
+
+    @GetMapping("/{id}")
+    public SimpleRequest get(@PathVariable Integer id) {
+        return service.get(id);
     }
 }
