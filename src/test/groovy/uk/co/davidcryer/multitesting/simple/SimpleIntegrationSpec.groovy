@@ -12,6 +12,8 @@ import uk.co.davidcryer.multitesting.utils.Requests
 
 import static groovy.json.JsonOutput.prettyPrint
 import static groovy.json.JsonOutput.toJson
+import static org.springframework.http.HttpStatus.NOT_FOUND
+import static org.springframework.http.HttpStatus.OK
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class SimpleIntegrationSpec extends Specification {
@@ -45,12 +47,11 @@ class SimpleIntegrationSpec extends Specification {
 }
 """.trim()
 
-
         cleanup:
         dbOps.deleteEntity(simple.id)
     }
 
-    def "get simple"() {
+    def "getting simple"() {
         given:
         def simple = dbOps.insertEntity new Simple(null, "test-name-get")
 
@@ -58,7 +59,7 @@ class SimpleIntegrationSpec extends Specification {
         def response = template.getForEntity"/simple/${simple.id}", SimpleRequest
 
         then:
-        response.statusCode == HttpStatus.OK
+        response.statusCode == OK
         prettyPrint(toJson(response.body)) == """
 {
     "id": ${simple.id},
@@ -68,5 +69,13 @@ class SimpleIntegrationSpec extends Specification {
 
         cleanup:
         dbOps.deleteEntity(simple.id)
+    }
+
+    def "getting non-existing simple returns 404"() {
+        when:
+        def response = template.getForEntity "/simple/nothing", SimpleRequest
+
+        then:
+        response.statusCode == NOT_FOUND
     }
 }

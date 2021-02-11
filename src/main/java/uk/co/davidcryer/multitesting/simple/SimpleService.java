@@ -10,7 +10,7 @@ import uk.co.davidcryer.multitesting.generated.tables.pojos.Simple;
 public class SimpleService {
     private final SimpleRepository repository;
 
-    SimpleRequest create(SimpleRequest request) {
+    SimpleRequest add(SimpleRequest request) {
         var unsavedSimple = new Simple();
         unsavedSimple.setName(request.getName());
         var savedSimple = repository.add(unsavedSimple);

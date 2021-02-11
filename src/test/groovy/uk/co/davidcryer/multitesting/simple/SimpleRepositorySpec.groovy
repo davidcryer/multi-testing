@@ -17,7 +17,7 @@ class SimpleRepositorySpec extends Specification {
 
     def "add simple returns with generated id"() {
         when:
-        def simple = repository.add(new Simple(null, "test-name"))
+        def simple = repository.add new Simple(null, "test-name")
 
         then:
         verifyAll(simple) {
@@ -26,7 +26,7 @@ class SimpleRepositorySpec extends Specification {
         }
 
         cleanup:
-        dbOps.deleteEntity(simple.id)
+        dbOps.deleteEntity simple.id
     }
 
     def "get for entity that doesn't exist returns null"() {
@@ -36,7 +36,7 @@ class SimpleRepositorySpec extends Specification {
 
     def "get returns matching entity"() {
         given:
-        def simple = dbOps.insertEntity(new Simple(null, "test-name"))
+        def simple = dbOps.insertEntity new Simple(null, "test-name")
 
         expect:
         verifyAll(repository.get(simple.id)) {
@@ -45,6 +45,6 @@ class SimpleRepositorySpec extends Specification {
         }
 
         cleanup:
-        dbOps.deleteEntity(simple.id)
+        dbOps.deleteEntity simple.id
     }
 }

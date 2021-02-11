@@ -13,8 +13,8 @@ public class SimpleController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public SimpleRequest create(@RequestBody SimpleRequest request) {
-        return service.create(request);
+    public SimpleRequest post(@RequestBody SimpleRequest request) {
+        return service.add(request);
     }
 
     @GetMapping("/{id}")

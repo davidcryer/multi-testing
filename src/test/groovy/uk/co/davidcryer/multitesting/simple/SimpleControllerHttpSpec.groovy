@@ -10,9 +10,6 @@ import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
 import spock.lang.Specification
 import spock.mock.DetachedMockFactory
-import uk.co.davidcryer.multitesting.simple.SimpleController
-import uk.co.davidcryer.multitesting.simple.SimpleRequest
-import uk.co.davidcryer.multitesting.simple.SimpleService
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 
@@ -26,7 +23,7 @@ class SimpleControllerHttpSpec extends Specification {
 
     def "post mapping"() {
         given:
-        simpleService.create(_ as SimpleRequest) >> { SimpleRequest request -> request.setId(1); request }
+        simpleService.add(_ as SimpleRequest) >> { SimpleRequest request -> request.setId(1); request }
 
         when:
         def response = mockMvc.perform(
