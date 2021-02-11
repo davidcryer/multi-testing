@@ -1,4 +1,4 @@
-package uk.co.davidcryer.multitesting
+package uk.co.davidcryer.multitesting.complex
 
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles

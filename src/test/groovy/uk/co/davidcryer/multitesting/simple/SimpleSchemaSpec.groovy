@@ -1,4 +1,4 @@
-package uk.co.davidcryer.multitesting
+package uk.co.davidcryer.multitesting.simple
 
 import org.jooq.DSLContext
 import org.springframework.beans.factory.annotation.Autowired
