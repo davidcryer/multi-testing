@@ -31,35 +31,30 @@ class SimpleIntegrationSpec extends Specification {
 }
 """), SimpleRequest
 
-        then: "assert response"
+        then: "assert entity"
+        def simple = getEntity(response.body.id)
+        verifyAll(simple) {
+            id != null
+            name == "test-name-post"
+        }
+
+        and: "assert response"
         response.statusCode == HttpStatus.CREATED
         prettyPrint(toJson(response.body)) == """
 {
-    "id": ${response.body.id},
-    "name": "test-name-post"
+    "id": ${simple.id},
+    "name": ${simple.name}
 }
 """.trim()
 
-        and: "assert entity"
-        verifyAll(getEntity(response.body.id)) {
-            name == response.body.name
-        }
-
-        and: "assert entity another way..."
-        properties(getEntity(response.body.id)) == properties(response.body)
 
         cleanup:
-        deleteEntity(response.body.id)
-    }
-
-    static def properties(Object o) {
-        o.properties.findAll {'class' != it.key}
+        deleteEntity(simple.id)
     }
 
     def "get simple"() {
         given:
         def simple = insertEntity new Simple(null, "test-name-get")
-
 
         when:
         def response = template.getForEntity"/simple/${simple.id}", SimpleRequest
@@ -69,7 +64,7 @@ class SimpleIntegrationSpec extends Specification {
         prettyPrint(toJson(response.body)) == """
 {
     "id": ${simple.id},
-    "name": "test-name-get"
+    "name": ${simple.name}
 }
 """.trim()
 
