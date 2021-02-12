@@ -16,7 +16,7 @@ import static org.springframework.http.HttpStatus.*;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@Import({SimpleDbOps.class})
+@Import(SimpleDbOps.class)
 public class SimpleIntegrationTest {
     @Autowired
     private TestRestTemplate template;

@@ -10,7 +10,6 @@ import uk.co.davidcryer.multitesting.generated.tables.pojos.Simple
 import uk.co.davidcryer.multitesting.utils.Requests
 
 import static groovy.json.JsonOutput.prettyPrint
-import static groovy.json.JsonOutput.toJson
 import static org.springframework.http.HttpStatus.NOT_FOUND
 import static org.springframework.http.HttpStatus.OK
 
@@ -20,28 +19,31 @@ class SimpleIntegrationSpec extends Specification {
     private TestRestTemplate template
     @Autowired
     private SimpleDbOps dbOps
+    @Autowired
+    private ObjectMapper objectMapper
 
     def "posting simple saves in database"() {
         given:
-        def request = new ObjectMapper().readValue"""
+        def request = objectMapper.readValue"""
 {
     "name": "test-name-post"
 }
 """, SimpleRequest
 
         when:
-        def response = template.postForEntity "/simple", Requests.post(request), SimpleRequest
+        def response = template.postForEntity"/simple", Requests.post(request), String
 
         then: "assert entity"
-        def simple = dbOps.get(response.body.id)
+        def id = objectMapper.readValue(response.body, SimpleRequest).id
+        def simple = dbOps.get(id)
         verifyAll(simple) {
-            id != null
+            it.id == id
             name == request.name
         }
 
         and: "assert response"
         response.statusCode == HttpStatus.CREATED
-        prettyPrint(toJson(response.body)) == """
+        prettyPrint(response.body) == """
 {
     "id": ${simple.id},
     "name": "${request.name}"
@@ -49,7 +51,7 @@ class SimpleIntegrationSpec extends Specification {
 """.trim()
 
         cleanup:
-        dbOps.delete(simple.id)
+        dbOps.delete simple.id
     }
 
     def "getting simple"() {
@@ -57,11 +59,11 @@ class SimpleIntegrationSpec extends Specification {
         def simple = dbOps.insert new Simple(null, "test-name-get")
 
         when:
-        def response = template.getForEntity"/simple/${simple.id}", SimpleRequest
+        def response = template.getForEntity"/simple/${simple.id}", String
 
         then:
         response.statusCode == OK
-        prettyPrint(toJson(response.body)) == """
+        prettyPrint(response.body) == """
 {
     "id": ${simple.id},
     "name": "${simple.name}"
@@ -69,12 +71,12 @@ class SimpleIntegrationSpec extends Specification {
 """.trim()
 
         cleanup:
-        dbOps.delete(simple.id)
+        dbOps.delete simple.id
     }
 
     def "getting non-existing simple returns 404"() {
         when:
-        def response = template.getForEntity "/simple/1", SimpleRequest
+        def response = template.getForEntity"/simple/1", String
 
         then:
         response.statusCode == NOT_FOUND

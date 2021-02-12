@@ -37,5 +37,6 @@ class SimpleDbOps {
         dslContext
                 .deleteFrom(SIMPLE)
                 .where(trueCondition())
+                .execute()
     }
 }
