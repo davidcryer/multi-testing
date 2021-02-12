@@ -12,8 +12,7 @@ import uk.co.davidcryer.multitesting.generated.tables.pojos.Simple;
 import uk.co.davidcryer.multitesting.utils.Requests;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.http.HttpStatus.CREATED;
-import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.HttpStatus.*;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -66,5 +65,12 @@ public class SimpleIntegrationTest {
                 .name("test-name-get")
                 .build()
         );
+    }
+
+    @Test
+    public void get_noEntityFoundReturns404() {
+        var response = template.getForEntity("/simple/1", SimpleRequest.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(NOT_FOUND);
     }
 }
