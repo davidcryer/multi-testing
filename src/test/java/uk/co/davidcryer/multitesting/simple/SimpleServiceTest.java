@@ -7,6 +7,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.co.davidcryer.multitesting.generated.tables.pojos.Simple;
 
+import java.util.Optional;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -40,10 +42,19 @@ public class SimpleServiceTest {
 
     @Test
     public void get() {
-        when(repository.get(1)).thenReturn(new Simple(1, "test-name"));
+        when(repository.get(1)).thenReturn(Optional.of(new Simple(1, "test-name")));
 
         var response = service.get(1);
 
-        assertThat(response).isEqualTo(new SimpleRequest(1, "test-name"));
+        assertThat(response).isEqualTo(Optional.of(new SimpleRequest(1, "test-name")));
+    }
+
+    @Test
+    public void get_returnsEmptyIfNoEntity() {
+        when(repository.get(1)).thenReturn(Optional.empty());
+
+        var response = service.get(1);
+
+        assertThat(response).isEqualTo(Optional.empty());
     }
 }

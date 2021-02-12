@@ -73,7 +73,7 @@ class SimpleIntegrationSpec extends Specification {
 
     def "getting non-existing simple returns 404"() {
         when:
-        def response = template.getForEntity "/simple/nothing", SimpleRequest
+        def response = template.getForEntity "/simple/1", SimpleRequest
 
         then:
         response.statusCode == NOT_FOUND

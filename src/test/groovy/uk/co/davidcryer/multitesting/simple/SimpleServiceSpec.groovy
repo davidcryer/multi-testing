@@ -29,12 +29,20 @@ class SimpleServiceSpec extends Specification {
         service.add(new SimpleRequest(-1, null)) == new SimpleRequest(null, null)
     }
 
-    def "get sample"() {
+    def "get for simple that doesn't exist returns empty"() {
         given:
-        repository.get(1) >> new Simple(1, "test-name")
+        repository.get(1) >> Optional.empty()
 
         expect:
-        verifyAll(service.get(1)) {
+        service.get(1) == Optional.empty()
+    }
+
+    def "get simple"() {
+        given:
+        repository.get(1) >> Optional.of(new Simple(1, "test-name"))
+
+        expect:
+        verifyAll(service.get(1).get()) {
             id == 1
             name == "test-name"
         }

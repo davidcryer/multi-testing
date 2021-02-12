@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.co.davidcryer.multitesting.generated.tables.pojos.Simple;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class SimpleService {
@@ -17,9 +19,8 @@ public class SimpleService {
         return toRequest(savedSimple);
     }
 
-    SimpleRequest get(Integer id) {
-        var simple = repository.get(id);
-        return toRequest(simple);
+    Optional<SimpleRequest> get(Integer id) {
+        return repository.get(id).map(SimpleService::toRequest);
     }
 
     private static SimpleRequest toRequest(Simple simple) {

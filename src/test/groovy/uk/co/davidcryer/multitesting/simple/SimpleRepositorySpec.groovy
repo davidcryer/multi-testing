@@ -29,9 +29,9 @@ class SimpleRepositorySpec extends Specification {
         dbOps.deleteEntity simple.id
     }
 
-    def "get for entity that doesn't exist returns null"() {
+    def "get for entity that doesn't exist returns empty"() {
         expect:
-        repository.get(1) == null
+        repository.get(1) == Optional.empty()
     }
 
     def "get returns matching entity"() {
@@ -39,7 +39,7 @@ class SimpleRepositorySpec extends Specification {
         def simple = dbOps.insertEntity new Simple(null, "test-name")
 
         expect:
-        verifyAll(repository.get(simple.id)) {
+        verifyAll(repository.get(simple.id).get()) {
             id == simple.id
             name == "test-name"
         }
