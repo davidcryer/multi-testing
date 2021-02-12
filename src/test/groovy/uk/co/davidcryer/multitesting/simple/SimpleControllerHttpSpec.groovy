@@ -15,11 +15,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 @WebMvcTest(controllers = [SimpleController])
 class SimpleControllerHttpSpec extends Specification {
-
     @Autowired
-    MockMvc mockMvc
+    private MockMvc mockMvc
     @Autowired
-    SimpleService simpleService
+    private SimpleService simpleService
 
     def "post mapping"() {
         given:
