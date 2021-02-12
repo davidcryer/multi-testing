@@ -1,7 +1,7 @@
 version: '3.6'
 services:
   app:
-    image: "eu.gcr.io/at-artefacts/ssp-demo-application-architecture"
+    image: "eu.gcr.io/at-artefacts/multi-testing"
     build:
       context: .
       args:
