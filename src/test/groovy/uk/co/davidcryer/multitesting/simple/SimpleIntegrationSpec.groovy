@@ -1,6 +1,6 @@
 package uk.co.davidcryer.multitesting.simple
 
-
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
@@ -16,25 +16,27 @@ import static org.springframework.http.HttpStatus.OK
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class SimpleIntegrationSpec extends Specification {
-
     @Autowired
     private TestRestTemplate template
     @Autowired
     private SimpleDbOps dbOps
 
-    def "posting simple should save in database"() {
-        when:
-        def response = template.postForEntity "/simple", Requests.post("""
+    def "posting simple saves in database"() {
+        given:
+        def request = new ObjectMapper().readValue"""
 {
     "name": "test-name-post"
 }
-"""), SimpleRequest
+""", SimpleRequest
+
+        when:
+        def response = template.postForEntity "/simple", Requests.post(request), SimpleRequest
 
         then: "assert entity"
         def simple = dbOps.get(response.body.id)
         verifyAll(simple) {
             id != null
-            name == "test-name-post"
+            name == request.name
         }
 
         and: "assert response"
@@ -42,7 +44,7 @@ class SimpleIntegrationSpec extends Specification {
         prettyPrint(toJson(response.body)) == """
 {
     "id": ${simple.id},
-    "name": "${simple.name}"
+    "name": "${request.name}"
 }
 """.trim()
 

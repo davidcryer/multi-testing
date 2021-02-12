@@ -1,6 +1,6 @@
 package uk.co.davidcryer.multitesting.simple;
 
-import org.junit.After;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,8 +23,8 @@ public class SimpleIntegrationTest {
     @Autowired
     private SimpleDbOps dbOps;
 
-    @After
-    public void afterTest() {
+    @AfterEach
+    public void afterEach() {
         dbOps.deleteAll();
     }
 
@@ -37,32 +37,32 @@ public class SimpleIntegrationTest {
                 "/simple", Requests.post(request), SimpleRequest.class);
 
         assertThat(response.getStatusCode()).isEqualTo(CREATED);
-
         var simpleResponse = response.getBody();
         assertThat(simpleResponse).isNotNull();
-        assertThat(simpleResponse).isEqualTo(SimpleRequest.builder()
-                .id(simpleResponse.getId())
-                .name("test-name-post")
-                .build()
-        );
 
         var entity = dbOps.get(simpleResponse.getId());
-        assertThat(simpleResponse.getId()).isEqualTo(entity.getId());
-        assertThat(simpleResponse.getName()).isEqualTo(entity.getName());
+        assertThat(entity.getId()).isNotNull();
+        assertThat(entity.getName()).isEqualTo(request.getName());
+
+        assertThat(simpleResponse).isEqualTo(SimpleRequest.builder()
+                .id(entity.getId())
+                .name(request.getName())
+                .build()
+        );
     }
 
     @Test
     public void get() {
-        var simple = dbOps.insert(new Simple(null, "test-name-get"));
+        var entity = dbOps.insert(new Simple(null, "test-name-get"));
 
-        var response = template.getForEntity("/simple/" + simple.getId(), SimpleRequest.class);
+        var response = template.getForEntity("/simple/" + entity.getId(), SimpleRequest.class);
 
         assertThat(response.getStatusCode()).isEqualTo(OK);
         var simpleResponse = response.getBody();
         assertThat(simpleResponse).isNotNull();
         assertThat(simpleResponse).isEqualTo(SimpleRequest.builder()
-                .id(simple.getId())
-                .name("test-name-get")
+                .id(entity.getId())
+                .name(entity.getName())
                 .build()
         );
     }
