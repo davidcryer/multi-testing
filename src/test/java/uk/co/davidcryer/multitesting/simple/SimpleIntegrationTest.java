@@ -1,33 +1,32 @@
 package uk.co.davidcryer.multitesting.simple;
 
-import org.jooq.DSLContext;
 import org.junit.After;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.co.davidcryer.multitesting.generated.tables.pojos.Simple;
 import uk.co.davidcryer.multitesting.utils.Requests;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.jooq.impl.DSL.trueCondition;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
-import static uk.co.davidcryer.multitesting.generated.tables.Simple.SIMPLE;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Import({SimpleDbOps.class})
 public class SimpleIntegrationTest {
     @Autowired
     private TestRestTemplate template;
     @Autowired
-    private DSLContext dslContext;
+    private SimpleDbOps dbOps;
 
     @After
     public void afterTest() {
-        dslContext.deleteFrom(SIMPLE).where(trueCondition());
+        dbOps.deleteAll();
     }
 
     @Test
@@ -48,14 +47,14 @@ public class SimpleIntegrationTest {
                 .build()
         );
 
-        var entity = getEntity(simpleResponse.getId());
+        var entity = dbOps.get(simpleResponse.getId());
         assertThat(simpleResponse.getId()).isEqualTo(entity.getId());
         assertThat(simpleResponse.getName()).isEqualTo(entity.getName());
     }
 
     @Test
-    public void getOne() {
-        var simple = insertEntity(new Simple(null, "test-name-get"));
+    public void get() {
+        var simple = dbOps.insert(new Simple(null, "test-name-get"));
 
         var response = template.getForEntity("/simple/" + simple.getId(), SimpleRequest.class);
 
@@ -67,26 +66,5 @@ public class SimpleIntegrationTest {
                 .name("test-name-get")
                 .build()
         );
-    }
-
-    private Simple getEntity(Integer id) {
-        return dslContext
-                .selectFrom(SIMPLE)
-                .where(SIMPLE.ID.eq(id))
-                .fetchOne()
-                .into(Simple.class);
-    }
-
-    private Simple insertEntity(Simple simple) {
-        var record = dslContext.newRecord(SIMPLE, simple);
-        record.store();
-        return record.into(Simple.class);
-    }
-
-    private void deleteEntity(Integer id) {
-        dslContext
-                .deleteFrom(SIMPLE)
-                .where(SIMPLE.ID.eq(id))
-                .execute();
     }
 }

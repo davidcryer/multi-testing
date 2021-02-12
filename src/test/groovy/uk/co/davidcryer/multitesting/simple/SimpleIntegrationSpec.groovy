@@ -7,7 +7,6 @@ import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.http.HttpStatus
 import spock.lang.Specification
 import uk.co.davidcryer.multitesting.generated.tables.pojos.Simple
-import uk.co.davidcryer.multitesting.simple.SimpleRequest
 import uk.co.davidcryer.multitesting.utils.Requests
 
 import static groovy.json.JsonOutput.prettyPrint
@@ -32,7 +31,7 @@ class SimpleIntegrationSpec extends Specification {
 """), SimpleRequest
 
         then: "assert entity"
-        def simple = dbOps.getEntity(response.body.id)
+        def simple = dbOps.get(response.body.id)
         verifyAll(simple) {
             id != null
             name == "test-name-post"
@@ -48,12 +47,12 @@ class SimpleIntegrationSpec extends Specification {
 """.trim()
 
         cleanup:
-        dbOps.deleteEntity(simple.id)
+        dbOps.delete(simple.id)
     }
 
     def "getting simple"() {
         given:
-        def simple = dbOps.insertEntity new Simple(null, "test-name-get")
+        def simple = dbOps.insert new Simple(null, "test-name-get")
 
         when:
         def response = template.getForEntity"/simple/${simple.id}", SimpleRequest
@@ -68,7 +67,7 @@ class SimpleIntegrationSpec extends Specification {
 """.trim()
 
         cleanup:
-        dbOps.deleteEntity(simple.id)
+        dbOps.delete(simple.id)
     }
 
     def "getting non-existing simple returns 404"() {
