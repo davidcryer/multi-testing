@@ -1,5 +1,5 @@
 create table large(
-    id varchar(20) primary key,
+    id varchar(36) primary key,
     first varchar(50),
     second varchar(50),
     third varchar(50),

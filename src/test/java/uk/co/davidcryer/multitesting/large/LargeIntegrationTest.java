@@ -17,7 +17,7 @@ import static org.springframework.http.HttpStatus.OK;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@Import({LargeDbOps.class})
+@Import(LargeDbOps.class)
 public class LargeIntegrationTest {
     @Autowired
     private TestRestTemplate template;
@@ -61,7 +61,7 @@ public class LargeIntegrationTest {
 
         var large = dbOps.get(largeResponse.getId());
         assertThat(large.getId()).isNotNull();
-        assertThat(large.getFirst()).isEqualTo(request.getSecond());
+        assertThat(large.getFirst()).isEqualTo(request.getFirst());
         assertThat(large.getSecond()).isEqualTo(request.getSecond());
         assertThat(large.getThird()).isEqualTo(request.getThird());
         assertThat(large.getFourth()).isEqualTo(request.getFourth());
@@ -111,7 +111,7 @@ public class LargeIntegrationTest {
     @Test
     public void get() {
         var large = dbOps.add(new Large(
-                null,
+                "ID",
                 "1",
                 "2",
                 "3",

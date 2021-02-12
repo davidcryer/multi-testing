@@ -6,11 +6,9 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
 import spock.lang.Specification
 import uk.co.davidcryer.multitesting.generated.tables.pojos.Large
-import uk.co.davidcryer.multitesting.simple.SimpleRequest
 import uk.co.davidcryer.multitesting.utils.Requests
 
 import static groovy.json.JsonOutput.prettyPrint
-import static groovy.json.JsonOutput.toJson
 import static org.springframework.http.HttpStatus.CREATED
 import static org.springframework.http.HttpStatus.OK
 
@@ -20,10 +18,12 @@ class LargeIntegrationSpec extends Specification {
     private TestRestTemplate template
     @Autowired
     private LargeDbOps dbOps
+    @Autowired
+    private ObjectMapper objectMapper
 
     def "posting large saves in database"() {
         given:
-        def request = new ObjectMapper().readValue"""
+        def request = objectMapper.readValue"""
 {
     "first": "1",
     "second": "2",
@@ -44,17 +44,18 @@ class LargeIntegrationSpec extends Specification {
     "seventeenth": "17",
     "eighteenth": "18",
     "nineteenth": "19",
-    "twentieth": "20",
+    "twentieth": "20"
 }
 """, LargeRequest
 
         when:
-        def response = template.postForEntity"/large", Requests.post(request), LargeRequest
+        def response = template.postForEntity"/large", Requests.post(request), String
 
         then: "assert entity"
-        def large = dbOps.get response.body.id
+        def id = objectMapper.readValue(response.body, LargeRequest).id
+        def large = dbOps.get id
         verifyAll(large) {
-            large.id != null
+            it.id == id
             first == request.first
             second == request.second
             third == request.third
@@ -79,7 +80,7 @@ class LargeIntegrationSpec extends Specification {
 
         and: "assert response"
         response.statusCode == CREATED
-        prettyPrint(toJson(response.body)) == """
+        prettyPrint(response.body) == """
 {
     "id": "${large.id}",
     "first": "${request.first}",
@@ -136,11 +137,11 @@ class LargeIntegrationSpec extends Specification {
         )
 
         when:
-        def response = template.getForEntity"/large/${large.id}", SimpleRequest
+        def response = template.getForEntity"/large/ID", String
 
         then:
         response.statusCode == OK
-        prettyPrint(toJson(response.body)) == """
+        prettyPrint(response.body) == """
 {
     "id": "${large.id}",
     "first": "${large.first}",
