@@ -11,6 +11,8 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.co.davidcryer.multitesting.generated.tables.pojos.Large;
 import uk.co.davidcryer.multitesting.utils.Requests;
 
+import java.util.UUID;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
@@ -60,7 +62,7 @@ public class LargeIntegrationTest {
         assertThat(largeResponse).isNotNull();
 
         var large = dbOps.get(largeResponse.getId());
-        assertThat(large.getId()).isNotNull();
+        assertThat(large.getId()).isEqualTo(largeResponse.getId());
         assertThat(large.getFirst()).isEqualTo(request.getFirst());
         assertThat(large.getSecond()).isEqualTo(request.getSecond());
         assertThat(large.getThird()).isEqualTo(request.getThird());
@@ -111,7 +113,7 @@ public class LargeIntegrationTest {
     @Test
     public void get() {
         var large = dbOps.add(new Large(
-                "ID",
+                UUID.randomUUID().toString(),
                 "1",
                 "2",
                 "3",
