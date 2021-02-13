@@ -137,7 +137,7 @@ class LargeIntegrationSpec extends Specification {
         )
 
         when:
-        def response = template.getForEntity"/large/ID", String
+        def response = template.getForEntity"/large/${large.id}", String
 
         then:
         response.statusCode == OK
