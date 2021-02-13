@@ -11,8 +11,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.co.davidcryer.multitesting.generated.tables.pojos.Large;
 import uk.co.davidcryer.multitesting.utils.Requests;
 
-import java.util.UUID;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
@@ -113,7 +111,7 @@ public class LargeIntegrationTest {
     @Test
     public void get() {
         var large = dbOps.add(new Large(
-                UUID.randomUUID().toString(),
+                "f6946b0d-24cc-4544-afb2-688b8e6e5ca9",//generated from UUID.randomUUID().toString()
                 "1",
                 "2",
                 "3",

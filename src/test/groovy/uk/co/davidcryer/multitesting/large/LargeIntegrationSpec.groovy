@@ -113,7 +113,7 @@ class LargeIntegrationSpec extends Specification {
     def "getting large"() {
         given:
         def large = dbOps.add new Large(
-                id: UUID.randomUUID().toString(),
+                id: "f6946b0d-24cc-4544-afb2-688b8e6e5ca9",//generated from UUID.randomUUID().toString()
                 first: "1",
                 second: "2",
                 third: "3",
