@@ -56,7 +56,7 @@ class SimpleIntegrationSpec extends Specification {
 
     def "getting simple"() {
         given:
-        def simple = dbOps.insert new Simple(null, "test-name-get")
+        def simple = dbOps.add new Simple(null, "test-name-get")
 
         when:
         def response = template.getForEntity"/simple/${simple.id}", String

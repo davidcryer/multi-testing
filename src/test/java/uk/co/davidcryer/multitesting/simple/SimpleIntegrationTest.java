@@ -53,7 +53,7 @@ public class SimpleIntegrationTest {
 
     @Test
     public void get() {
-        var entity = dbOps.insert(new Simple(null, "test-name-get"));
+        var entity = dbOps.add(new Simple(null, "test-name-get"));
 
         var response = template.getForEntity("/simple/" + entity.getId(), SimpleRequest.class);
 

@@ -36,7 +36,7 @@ class SimpleRepositorySpec extends Specification {
 
     def "get returns matching entity"() {
         given:
-        def simple = dbOps.insert new Simple(null, "test-name")
+        def simple = dbOps.add new Simple(null, "test-name")
 
         expect:
         verifyAll(repository.get(simple.id).get()) {

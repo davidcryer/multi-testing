@@ -1,34 +1,71 @@
 package uk.co.davidcryer.multitesting.cucumber;
 
+import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.http.HttpStatus;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.ResponseEntity;
+import uk.co.davidcryer.multitesting.generated.tables.pojos.Simple;
+import uk.co.davidcryer.multitesting.simple.SimpleDbOps;
 import uk.co.davidcryer.multitesting.simple.SimpleRequest;
+
+import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Import(SimpleDbOps.class)
 public class SimpleSteps {
 
     @Autowired
-    private TestRestTemplate restTemplate;
-    private ResponseEntity<SimpleRequest> simpleResponse;
+    private TestRestTemplate template;
+    @Autowired
+    private SimpleDbOps dbOps;
+    private SimpleRequest request;
+    private ResponseEntity<SimpleRequest> response;
+    private Simple entity;
 
     @When("a new simple is posted")
     public void postNewSimple() {
-        simpleResponse = restTemplate.postForEntity("/simple", new SimpleRequest(null, "test-name"), SimpleRequest.class);
+        request = SimpleData.request();
+        response = template.postForEntity("/simple", request, SimpleRequest.class);
     }
 
-    @Then("a new simple is created")
-    public void newSimpleIsCreated() {
-        assertThat(simpleResponse).isNotNull();
-        assertThat(simpleResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+    @Then("a new simple is created matching request")
+    public void newSimpleIsCreatedMatchingRequest() {
+        Objects.requireNonNull(request);
+        var id = Objects.requireNonNull(response.getBody()).getId();
+        var entity = dbOps.get(id);
+        assertThat(entity.getId()).isEqualTo(id);
+        assertThat(entity.getName()).isEqualTo(request.getName());
+    }
 
-        SimpleRequest body = simpleResponse.getBody();
+    @Then("the simple post response matches the request with generated id")
+    public void postMatchesRequest() {
+        var body = Objects.requireNonNull(response).getBody();
         assertThat(body).isNotNull();
-        assertThat(body.getId()).isNotNull();
-        assertThat(body.getName()).isEqualTo("test-name");
+        assertThat(body.getId()).isEqualTo(dbOps.get(body.getId()).getId());
+        assertThat(body.getName()).isEqualTo(request.getName());
+    }
+
+    @Given("a simple exists")
+    public void aSimpleExists() {
+        entity = dbOps.add(SimpleData.entity());
+    }
+
+    @When("the simple is fetched")
+    public void theSimpleIsFetched() {
+        Objects.requireNonNull(entity);
+        response = template.getForEntity("/simple/" + entity.getId(), SimpleRequest.class);
+    }
+
+    @Then("the response matches the simple")
+    public void theResponseMatchesTheSimple() {
+        Objects.requireNonNull(entity);
+        var body = Objects.requireNonNull(response).getBody();
+        assertThat(body).isNotNull();
+        assertThat(body.getId()).isEqualTo(entity.getId());
+        assertThat(body.getName()).isEqualTo(entity.getName());
     }
 }

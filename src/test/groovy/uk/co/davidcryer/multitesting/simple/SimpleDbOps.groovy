@@ -20,7 +20,7 @@ class SimpleDbOps {
                 .fetchOneInto(Simple)
     }
 
-    Simple insert(Simple simple) {
+    Simple add(Simple simple) {
         def record = dslContext.newRecord(SIMPLE, simple)
         record.store()
         record.into(Simple)
