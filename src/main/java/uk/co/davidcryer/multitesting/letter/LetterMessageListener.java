@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 public class LetterMessageListener {
     private final LetterService service;
 
-    @KafkaListener(topics = LetterMessage.TOPIC, groupId = "multi-testing", containerFactory = "letterMessageListenerFactory")
+    @KafkaListener(topics = LetterMessage.TOPIC, containerFactory = "letterMessageListenerFactory")
     public void listen(LetterMessage letterMessage) {
         service.add(letterMessage);
     }

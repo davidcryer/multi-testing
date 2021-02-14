@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import uk.co.davidcryer.multitesting.generated.tables.pojos.Address;
 
+import java.util.Optional;
+
 import static uk.co.davidcryer.multitesting.generated.Tables.ADDRESS;
 
 @Repository
@@ -17,5 +19,14 @@ public class AddressRepository {
         var record = dslContext.newRecord(ADDRESS, address);
         record.store();
         return record.into(Address.class);
+    }
+
+    Optional<Address> get(String id) {
+        return Optional.ofNullable(
+                dslContext
+                        .selectFrom(ADDRESS)
+                        .where(ADDRESS.ID.eq(id))
+                        .fetchOneInto(Address.class)
+        );
     }
 }

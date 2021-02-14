@@ -5,10 +5,18 @@ import org.apache.kafka.clients.producer.Producer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.web.client.TestRestTemplate
 import spock.lang.Specification
+import uk.co.davidcryer.multitesting.generated.tables.pojos.Address
+import uk.co.davidcryer.multitesting.generated.tables.pojos.Letter
+
+import static groovy.json.JsonOutput.prettyPrint
+import static org.springframework.http.HttpStatus.OK
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class LetterIntegrationSpec extends Specification {
+    @Autowired
+    private TestRestTemplate template
     @Autowired
     private Producer<String, Object> kafkaProducer
     @Autowired
@@ -16,7 +24,7 @@ class LetterIntegrationSpec extends Specification {
     @Autowired
     private ObjectMapper objectMapper
 
-    def "consumed message is saved in database"() {
+    def "consuming message saves in database"() {
         given:
         def message = objectMapper.readValue"""
 {
@@ -42,7 +50,7 @@ class LetterIntegrationSpec extends Specification {
 
         then:
         def letter = dbOps.getLetter message.id
-        def recipientAddress = dbOps.getRecipientAddress letter.recipientAddress
+        def recipientAddress = dbOps.getAddress letter.recipientAddress
         verifyAll(letter) {
             id == message.id
             sender == message.sender
@@ -54,13 +62,60 @@ class LetterIntegrationSpec extends Specification {
             id != null
             buildingNumber == message.recipientAddress.buildingNumber
             organisation == message.recipientAddress.organisation
-            addressline1 == message.recipientAddress.addressLine1
-            addressline2 == message.recipientAddress.addressLine2
+            addressLine_1 == message.recipientAddress.addressLine1
+            addressLine_2 == message.recipientAddress.addressLine2
             town == message.recipientAddress.town
             postcode == message.recipientAddress.postcode
         }
 
         cleanup:
         dbOps.delete message.id
+    }
+
+    def "getting letter"() {
+        given:
+        def address = dbOps.addAddress new Address(
+                id: "address-id",
+                buildingNumber: "test-building-number",
+                organisation: "test-organisation",
+                addressLine_1: "test-address-line-1",
+                addressLine_2: "test-address-line-2",
+                county: "test-county",
+                town: "test-town",
+                postcode: "test-pc"
+        )
+        def letter = dbOps.addLetter new Letter(
+                id: "letter-id",
+                sender: "test-sender",
+                recipient: "test-recipient",
+                recipientAddress: address.id,
+                message: "test-message"
+        )
+
+        when:
+        def response = template.getForEntity"/letter/${letter.id}", String
+
+        then:
+        response.statusCode == OK
+        prettyPrint(response.body) == """
+{
+    "id": "${letter.id}",
+    "sender": "${letter.sender}",
+    "recipient": "${letter.recipient}",
+    "recipientAddress": {
+        "buildingNumber": "${address.buildingNumber}",
+        "organisation": "${address.organisation}",
+        "addressLine1": "${address.addressLine_1}",
+        "addressLine2": "${address.addressLine_2}",
+        "county": "${address.county}",
+        "town": "${address.town}",
+        "postcode": "${address.postcode}"
+    },
+    "message": "${letter.message}"
+}
+""".trim()
+
+        cleanup:
+        dbOps.delete letter.id
     }
 }
