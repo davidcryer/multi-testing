@@ -11,6 +11,7 @@ The source files have been divided according to their feature, with each showcas
 * Large, being functionally identical to Simple, but with a domain object of 21 fields, and a string id field. The purpose was to observe how the testing types code under larger-scaled payloads.
 * Letter, which consumes and stores messages from a Kafka queue
 * Potato, which consumes messages from a kafka queue and passes them on to an external http client
+* Labour + Fruit, which takes fruit request and puts it in a Kafka queue, with a generated id and created timestamp
 
 A few different methods of testing have been used. Some purely overlap and are examples of contrasting techniques, whilst others show off useful features in their own right. The first group is around various integration testing tools. The second is a mismatch of tools that border the line between unit test and integration test and concern testing small parts of the application or even just database.
 
