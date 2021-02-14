@@ -4,15 +4,15 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 import io.cucumber.java.After;
 import io.cucumber.java.en.Given;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import uk.co.davidcryer.multitesting.letter.LetterMessage;
 import uk.co.davidcryer.multitesting.utils.KafkaHelper;
 
 import java.util.Objects;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
-import static wiremock.com.google.common.io.Resources.getResource;
 
 public class OtherSteps {
 
@@ -20,6 +20,11 @@ public class OtherSteps {
     private KafkaHelper kafkaHelper;
 
     private WireMockServer wireMockServer;
+
+    @Bean
+    public KafkaHelper kafkaHelper(@Value("@{kafka.server}") String kafkaServer) {
+        return new KafkaHelper(kafkaServer).startConsumingAvroTopics(LetterMessage.TOPIC);
+    }
 
     @Given("setup")
     public void beforeScenario() {

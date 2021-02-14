@@ -1,27 +1,34 @@
 package uk.co.davidcryer.multitesting.utils;
 
+import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.errors.TimeoutException;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.kafka.core.ConsumerFactory;
+import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.listener.KafkaMessageListenerContainer;
 import org.springframework.kafka.listener.MessageListener;
-import org.springframework.stereotype.Component;
 
 import java.io.Closeable;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Component
 public class KafkaHelper implements Closeable {
     private final ConsumerFactory<String, Object> consumerFactory;
 
     private Map<String, List<Object>> consumedMessages = new HashMap<>();
     private KafkaMessageListenerContainer<String, Object> avroContainer;
 
-    @Autowired
-    public KafkaHelper(ConsumerFactory<String, Object> consumerFactory) {
-        this.consumerFactory = consumerFactory;
+    public KafkaHelper(String kafkaServer) {
+        var properties = new HashMap<String, Object>();
+        properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaServer);
+        properties.put(ConsumerConfig.GROUP_ID_CONFIG, "multi-testing-" + hashCode());
+        properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        properties.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 10);
+        properties.put(ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG, 110000);
+        properties.put(ConsumerConfig.REQUEST_TIMEOUT_MS_CONFIG, 100000);
+        this.consumerFactory = new DefaultKafkaConsumerFactory<>(properties);
     }
 
     public KafkaHelper startConsumingAvroTopics(String... topics) {
