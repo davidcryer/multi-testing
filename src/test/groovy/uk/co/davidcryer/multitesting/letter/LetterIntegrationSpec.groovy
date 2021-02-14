@@ -48,6 +48,7 @@ class LetterIntegrationSpec extends Specification {
             sender == message.sender
             recipient == message.recipient
             it.recipientAddress == recipientAddress.id
+            it.message == message.message
         }
         verifyAll(recipientAddress) {
             id != null
