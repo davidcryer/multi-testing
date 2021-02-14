@@ -4,7 +4,7 @@ import io.cucumber.java.After;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
-import uk.co.davidcryer.multitesting.utils.KafkaHelper;
+import uk.co.davidcryer.multitesting.utils.TestKafkaConsumer;
 
 public class SpringHooks implements BeanFactoryAware {
 
@@ -15,12 +15,12 @@ public class SpringHooks implements BeanFactoryAware {
         this.beanFactory = beanFactory;
     }
 
-    public KafkaHelper obtainKafkaHelper() {
-        return beanFactory.getBean(KafkaHelper.class);
+    public TestKafkaConsumer obtainKafkaHelper() {
+        return beanFactory.getBean(TestKafkaConsumer.class);
     }
 
     @After(value = "@kafka", order = 100)
     public void rollBackTransaction() {
-        obtainKafkaHelper().clearAllConsumedMessages();
+        obtainKafkaHelper().clear();
     }
 }
