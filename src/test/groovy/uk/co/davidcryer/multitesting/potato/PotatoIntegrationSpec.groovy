@@ -18,9 +18,9 @@ class PotatoIntegrationSpec extends Specification {
     private TestRestTemplate template
     @Autowired
     private Producer<String, Object> kafkaProducer
-    private WireMockServer potatoClient
     @Autowired
     private ObjectMapper objectMapper
+    private WireMockServer potatoClient = new WireMockServer(wireMockConfig().port(9876))
 
     def "consuming potato passes it on to external service"() {
         given:
@@ -37,7 +37,6 @@ class PotatoIntegrationSpec extends Specification {
 """, PotatoMessage
 
         and:
-        potatoClient = new WireMockServer(wireMockConfig().port(9876))
         potatoClient.start()
         potatoClient.stubFor(put("/potato/${potato.id}").willReturn(aResponse().withStatus(200)))
 
@@ -54,7 +53,7 @@ class PotatoIntegrationSpec extends Specification {
     "description": "${potato.description}",
     "temperature": "${potato.temperature.value}${potato.temperature.unit}"
 }
-""".trim())))
+""")))
 
         cleanup:
         potatoClient.stop()
