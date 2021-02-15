@@ -55,7 +55,7 @@ class LabourIntegrationSpec extends Specification {
         and: "assert queued message generated properties"
         def message = kafkaHelper.get(1, 2000).get(0)
         verifyAll(message) {
-            id != null
+            id == UUID.fromString(id).toString()
             created.isAfter(testStart) && created.isBefore(ZonedDateTime.now())
         }
 
