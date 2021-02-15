@@ -6,7 +6,7 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 @Service
@@ -17,7 +17,7 @@ public class LabourService {
     public void add(FruitRequest request) {
         var fruit = new FruitMessage(
                 UUID.randomUUID().toString(),
-                Instant.now(),
+                ZonedDateTime.now(),
                 request.getDescription()
         );
         kafkaProducer.send(new ProducerRecord<>(FruitMessage.TOPIC, fruit.getId(), fruit));

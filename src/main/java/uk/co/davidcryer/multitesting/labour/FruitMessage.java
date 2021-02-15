@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.extern.jackson.Jacksonized;
 
-import java.time.Instant;
+import java.time.ZonedDateTime;
 
 @Jacksonized
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -16,6 +16,6 @@ import java.time.Instant;
 public class FruitMessage {
     public static final String TOPIC = "fruit";
     private String id;
-    private Instant created;
+    private ZonedDateTime created;
     private String description;
 }

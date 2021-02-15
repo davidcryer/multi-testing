@@ -11,8 +11,9 @@ import spock.lang.Specification
 import uk.co.davidcryer.multitesting.utils.Requests
 import uk.co.davidcryer.multitesting.utils.TestKafkaConsumer
 
-import java.time.Instant
+import java.time.ZonedDateTime
 
+import static groovy.json.JsonOutput.prettyPrint
 import static org.springframework.http.HttpStatus.OK
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -39,14 +40,14 @@ class LabourIntegrationSpec extends Specification {
 
     def "posting fruit puts it onto kafka queue"() {
         given:
-        def testStart = Instant.now()
-        def fruit = objectMapper.readValue"""
+        def testStart = ZonedDateTime.now()
+        def request = objectMapper.readValue"""
 {
     "description": "shiny red apple"
 }
 """, FruitRequest
         when:
-        def response = template.postForEntity"/labour", Requests.post(fruit), String
+        def response = template.postForEntity"/labour", Requests.post(request), String
 
         then: "assert response"
         response.statusCode == OK
@@ -54,19 +55,33 @@ class LabourIntegrationSpec extends Specification {
         and: "assert queued message"
         def messages = kafkaHelper.get 1, 2000
         messages.size() == 1
-        verifyAll(messages.get(0)) {
+        def message = messages.get(0)
+        verifyAll(message) {
             id != null
-            created > testStart && created < Instant.now()
-            description == fruit.description
+            created.isAfter(testStart) && created.isBefore(ZonedDateTime.now())
+            description == request.description
         }
+
+        and: "can also assert queued message as json"
+        prettyPrint(json(message)) == """
+{
+    "id": "${message.id}",
+    "created": ${json(message.created)},
+    "description": "${request.description}"
+}
+""".trim()
 
         cleanup:
         kafkaHelper.clear()
     }
 
+    private def json(Object o) {//json friendly
+        objectMapper.writeValueAsString o
+    }
+
     def "do the same again to see how TestKafkaConsumer behaves"() {
         given:
-        def testStart = Instant.now()
+        def testStart = ZonedDateTime.now()
         def fruit = objectMapper.readValue"""
 {
     "description": "bright juicy orange"
@@ -83,7 +98,7 @@ class LabourIntegrationSpec extends Specification {
         messages.size() == 1
         verifyAll(messages.get(0)) {
             id != null
-            created > testStart && created < Instant.now()
+            created.isAfter(testStart) && created.isBefore(ZonedDateTime.now())
             description == fruit.description
         }
 
