@@ -53,8 +53,7 @@ class LabourIntegrationSpec extends Specification {
         response.statusCode == OK
 
         and: "assert queued message generated properties"
-        def messages = kafkaHelper.get 1, 2000
-        def message = messages.get(0)
+        def message = kafkaHelper.get(1, 2000).get(0)
         verifyAll(message) {
             id != null
             created.isAfter(testStart) && created.isBefore(ZonedDateTime.now())
@@ -92,8 +91,8 @@ class LabourIntegrationSpec extends Specification {
         response.statusCode == OK
 
         and: "assert queued message"
-        def messages = kafkaHelper.get 1, 2000
-        verifyAll(messages.get(0)) {
+        def message = kafkaHelper.get(1, 2000).get(0)
+        verifyAll(message) {
             id != null
             created.isAfter(testStart) && created.isBefore(ZonedDateTime.now())
             description == fruit.description
