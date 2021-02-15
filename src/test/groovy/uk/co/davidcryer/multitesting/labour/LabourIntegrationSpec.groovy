@@ -52,17 +52,15 @@ class LabourIntegrationSpec extends Specification {
         then: "assert response"
         response.statusCode == OK
 
-        and: "assert queued message"
+        and: "assert queued message generated properties"
         def messages = kafkaHelper.get 1, 2000
-        messages.size() == 1
         def message = messages.get(0)
         verifyAll(message) {
             id != null
             created.isAfter(testStart) && created.isBefore(ZonedDateTime.now())
-            description == request.description
         }
 
-        and: "can also assert queued message as json"
+        and: "assert queued message json"
         prettyPrint(json(message)) == """
 {
     "id": "${message.id}",
@@ -95,7 +93,6 @@ class LabourIntegrationSpec extends Specification {
 
         and: "assert queued message"
         def messages = kafkaHelper.get 1, 2000
-        messages.size() == 1
         verifyAll(messages.get(0)) {
             id != null
             created.isAfter(testStart) && created.isBefore(ZonedDateTime.now())
