@@ -38,8 +38,7 @@ public class TestKafkaConsumer<V> implements Closeable {
         messages.clear();
     }
 
-    public List<V> get(int expectedNumMessages, long timeoutMillis)
-            throws TimeoutException, InterruptedException {
+    public List<V> get(int expectedNumMessages, long timeoutMillis) throws TimeoutException, InterruptedException {
         var timeoutTime = System.currentTimeMillis() + timeoutMillis;
 
         while (messages.size() < expectedNumMessages) {
