@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.errors.TimeoutException;
+import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.listener.ContainerProperties;
@@ -97,11 +98,18 @@ public class TestKafkaConsumer<V> implements Closeable {
             properties.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 10);
             properties.put(ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG, 110000);
             properties.put(ConsumerConfig.REQUEST_TIMEOUT_MS_CONFIG, 100000);
-            var consumerFactory = new DefaultKafkaConsumerFactory<>(
-                    properties, new StringDeserializer(), new JsonDeserializer<>(topicClass, false));
+            var consumerFactory = new DefaultKafkaConsumerFactory<>(properties, new StringDeserializer(), getDeserializer());
             var containerProperties = new ContainerProperties(topic);
             var container = new KafkaMessageListenerContainer<>(consumerFactory, containerProperties);
             return new TestKafkaConsumer<>(container);
+        }
+
+        private Deserializer<V> getDeserializer() {
+            if (topicClass == String.class) {
+                //noinspection unchecked
+                return (Deserializer<V>) new StringDeserializer();
+            }
+            return new JsonDeserializer<>(topicClass, false);
         }
     }
 }
