@@ -2,7 +2,6 @@ package uk.co.davidcryer.multitesting.cv;
 
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
 import org.quartz.Scheduler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -20,7 +19,7 @@ public class PublishCvTaskJob extends TaskJob {
     }
 
     @Override
-    public void executeTask(JobExecutionContext context) throws JobExecutionException {
+    public void executeTask(JobExecutionContext context) {
         var props = context.getMergedJobDataMap();
         var cvId = props.getString("cvId");
         service.add(cvId);
