@@ -22,7 +22,7 @@ public class PublishCvTaskService {
     private CvMessage toMessage(Cv cv) {
         return new CvMessage(
                 cv.getId(),
-                cv.getCreated().atZoneSameInstant(ZoneId.of("UTC")),
+                cv.getCreated().atZone(ZoneId.of("UTC")),
                 cv.getEmailaddress(),
                 cv.getPhonenumber(),
                 cv.getName(),

@@ -9,8 +9,6 @@ import org.quartz.SchedulerException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import static uk.co.davidcryer.multitesting.cv.SaveCvOrchestratorJob.buildProps;
-
 @Service
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class CvService {
@@ -20,7 +18,8 @@ public class CvService {
     public boolean add(CvRequest cv) {
         try {
             var request = objectMapper.writeValueAsString(cv);
-            scheduler.triggerJob(JobKey.jobKey(SaveCvOrchestratorJob.KEY), buildProps(request));
+            var props = SaveCvOrchestratorJob.props(request);
+            scheduler.triggerJob(JobKey.jobKey(SaveCvOrchestratorJob.KEY), props);
             return true;
         } catch (SchedulerException | JsonProcessingException e) {
             return false;

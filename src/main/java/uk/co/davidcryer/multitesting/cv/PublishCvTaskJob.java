@@ -20,26 +20,16 @@ public class PublishCvTaskJob extends TaskJob {
     }
 
     @Override
-    public void execute(JobExecutionContext context) throws JobExecutionException {
+    public void executeTask(JobExecutionContext context) throws JobExecutionException {
         var props = context.getMergedJobDataMap();
         var cvId = props.getString("cvId");
         service.add(cvId);
-        endTask(context);
     }
 
-    public static JobDataMap buildProps(String cvId) {
+    public static JobDataMap props(String cvId) {
         var props = new JobDataMap();
         props.put("cvId", cvId);
         return props;
-    }
-
-    public static <T> T withProps(JobDataMap props, PropsConsumer<T> consumer) {
-        var cvId = props.getString("cvId");
-        return consumer.apply(cvId);
-    }
-
-    interface PropsConsumer<T> {
-        T apply(String cvId);
     }
 }
 

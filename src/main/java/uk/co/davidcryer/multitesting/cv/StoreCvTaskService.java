@@ -5,8 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.co.davidcryer.multitesting.generated.tables.pojos.Cv;
 
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
@@ -17,7 +16,7 @@ public class StoreCvTaskService {
     public String add(CvRequest request) {
         var cv = new Cv(
                 UUID.randomUUID().toString(),
-                OffsetDateTime.now(ZoneId.of("UTC")),
+                LocalDateTime.now(),
                 request.getEmailAddress(),
                 request.getPhoneNumber(),
                 request.getName(),

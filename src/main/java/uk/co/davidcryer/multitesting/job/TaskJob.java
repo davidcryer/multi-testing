@@ -11,12 +11,17 @@ public abstract class TaskJob implements Job {
 
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
+        executeTask(context);
+        triggerNextJob(context);
+    }
+
+    private void triggerNextJob(JobExecutionContext context) throws JobExecutionException {
         try {
-            executeTask(context);
             var props = context.getMergedJobDataMap();
-            if (props.containsKey("task.nextJob")) {
-                var nextJob = props.getString("task.nextJob");
-                var nextProps = OrchestratorJob.buildProps(key);
+            if (props.containsKey("job.next")) {
+                var nextJob = props.getString("job.next");
+                var nextProps = new JobDataMap();
+                nextProps.put("job.last", key);
                 writeToReturnProps(nextProps);
                 scheduler.triggerJob(JobKey.jobKey(nextJob), nextProps);
             }
@@ -25,11 +30,9 @@ public abstract class TaskJob implements Job {
         }
     }
 
-    protected abstract void executeTask(JobExecutionContext context);
+    protected abstract void executeTask(JobExecutionContext context) throws JobExecutionException;
 
-    protected abstract void writeToReturnProps(JobDataMap props);
+    protected void writeToReturnProps(JobDataMap props) {
 
-    protected String key() {
-        return key;
     }
 }

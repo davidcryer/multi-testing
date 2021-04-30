@@ -10,11 +10,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.co.davidcryer.multitesting.job.TaskJob;
 
+import java.util.function.Function;
+
 @Component
 public class StoreCvTaskJob extends TaskJob {
     public static final String KEY = "store-cv";
     private final StoreCvTaskService service;
     private final ObjectMapper objectMapper;
+    private String cvId;
 
     @Autowired
     public StoreCvTaskJob(Scheduler scheduler, StoreCvTaskService service, ObjectMapper objectMapper) {
@@ -24,31 +27,29 @@ public class StoreCvTaskJob extends TaskJob {
     }
 
     @Override
-    public void execute(JobExecutionContext context) throws JobExecutionException {
+    protected void executeTask(JobExecutionContext context) throws JobExecutionException {
         try {
             var props = context.getMergedJobDataMap();
             var request = objectMapper.readValue(props.getString("cv"), CvRequest.class);
-            var cvId = service.add(request);
-            endTask(context, nextProps -> {
-                nextProps.put("cvId", cvId);
-            });
+            cvId = service.add(request);
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            throw new JobExecutionException(e);
         }
     }
 
-    public static JobDataMap buildProps(String cv) {
+    @Override
+    protected void writeToReturnProps(JobDataMap props) {
+        props.put("cvId", cvId);
+    }
+
+    public static JobDataMap props(String cv) {
         var props = new JobDataMap();
         props.put("cv", cv);
         return props;
     }
 
-    public static <T> T withProps(JobDataMap props, PropsConsumer<T> consumer) {
+    public static JobDataMap mapReturnProps(JobDataMap props, Function<String, JobDataMap> map) {
         var cvId = props.getString("cvId");
-        return consumer.apply(cvId);
-    }
-
-    interface PropsConsumer<T> {
-        T apply(String cvId);
+        return map.apply(cvId);
     }
 }
