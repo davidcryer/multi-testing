@@ -7,8 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.co.davidcryer.multitesting.generated.tables.pojos.Cv;
 
-import java.time.ZoneId;
-
 @Service
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class PublishCvTaskService {
@@ -22,10 +20,10 @@ public class PublishCvTaskService {
     private CvMessage toMessage(Cv cv) {
         return new CvMessage(
                 cv.getId(),
-                cv.getCreated().atZone(ZoneId.of("UTC")),
+                cv.getCreated(),
+                cv.getName(),
                 cv.getEmailaddress(),
                 cv.getPhonenumber(),
-                cv.getName(),
                 cv.getContent()
         );
     }

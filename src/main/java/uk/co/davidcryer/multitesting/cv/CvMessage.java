@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.extern.jackson.Jacksonized;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDateTime;
 
 @Jacksonized
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -16,7 +16,7 @@ import java.time.ZonedDateTime;
 public class CvMessage {
     public static final String TOPIC = "cv";
     private String id;
-    private ZonedDateTime created;
+    private LocalDateTime created;
     private String name;
     private String emailAddress;
     private String phoneNumber;
