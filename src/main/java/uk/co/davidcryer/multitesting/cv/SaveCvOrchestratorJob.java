@@ -3,7 +3,7 @@ package uk.co.davidcryer.multitesting.cv;
 import org.quartz.JobDataMap;
 import org.quartz.Scheduler;
 import org.springframework.stereotype.Component;
-import uk.co.davidcryer.multitesting.job.OrchestratorJob;
+import uk.co.davidcryer.jobs.OrchestratorJob;
 
 import java.util.Map;
 
