@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/cv")
+@RequestMapping("/cvs")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class CvController {
     private final CvService service;

@@ -1,8 +1,10 @@
 create table cv(
     id varchar(36) primary key,
     created timestamp(6),
-    emailAddress varchar(256),
-    phoneNumber varchar(20),
+    email_address varchar(256),
+    phone_number varchar(20),
     name varchar(256),
-    content varchar(1000)
+    content varchar(1000),
+    is_published_to_kafka boolean,
+    is_published_to_client boolean
 );

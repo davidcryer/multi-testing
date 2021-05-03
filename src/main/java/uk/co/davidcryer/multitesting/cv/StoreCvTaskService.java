@@ -20,7 +20,9 @@ public class StoreCvTaskService {
                 request.getEmailAddress(),
                 request.getPhoneNumber(),
                 request.getName(),
-                request.getContent()
+                request.getContent(),
+                false,
+                false
         );
         return cvRepository.add(cv).getId();
     }

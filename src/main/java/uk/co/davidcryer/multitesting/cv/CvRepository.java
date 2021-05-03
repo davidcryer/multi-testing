@@ -29,4 +29,13 @@ public class CvRepository {
                         .fetchOneInto(Cv.class)
         );
     }
+
+    public void update(String id, boolean didPublishToClient, boolean didPublishToKafka) {
+        var cv = dslContext.selectFrom(CV)
+                .where(CV.ID.eq(id))
+                .fetchOne();
+        cv.setIsPublishedToClient(didPublishToClient);
+        cv.setIsPublishedToKafka(didPublishToKafka);
+        cv.store();
+    }
 }

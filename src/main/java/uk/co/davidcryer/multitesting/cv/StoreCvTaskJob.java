@@ -38,7 +38,7 @@ public class StoreCvTaskJob extends TaskJob {
     }
 
     @Override
-    protected void writeToReturnProps(JobDataMap props) {
+    protected void writeToReturnProps(JobExecutionContext context, JobDataMap props) {
         props.put("cvId", cvId);
     }
 
