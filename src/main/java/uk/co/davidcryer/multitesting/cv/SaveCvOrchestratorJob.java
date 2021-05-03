@@ -26,15 +26,15 @@ public class SaveCvOrchestratorJob extends OrchestratorJob {
                 StoreCvTaskJob.KEY, this.triggerPublishJobs,
                 PublishCvToClientTaskJob.KEY, (context, props) -> {
                     var jobProps = context.getJobDetail().getJobDataMap();
-                    jobProps.put("kafkaPublishJobFinished", true);
-                    if (jobProps.containsKey("clientPublishJobFinished")) {
+                    jobProps.put("clientPublishJobFinished", true);
+                    if (jobProps.containsKey("kafkaPublishJobFinished")) {
                         this.triggerUpdateCvWithPublishStatusJob.execute(context, props);
                     }
                 },
                 PublishCvToKafkaTaskJob.KEY, (context, props) -> {
                     var jobProps = context.getJobDetail().getJobDataMap();
-                    jobProps.put("clientPublishJobFinished", true);
-                    if (jobProps.containsKey("kafkaPublishJobFinished")) {
+                    jobProps.put("kafkaPublishJobFinished", true);
+                    if (jobProps.containsKey("clientPublishJobFinished")) {
                         this.triggerUpdateCvWithPublishStatusJob.execute(context, props);
                     }
                 }
