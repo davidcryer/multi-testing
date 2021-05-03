@@ -7,11 +7,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.co.davidcryer.jobs.TaskJob;
 
+import java.util.function.Function;
+
 @Component
 public class PublishCvToKafkaTaskJob extends TaskJob {
     public static final String KEY = "publish-cv-to-kafka";
     private final PublishCvToKafkaTaskService service;
-    private boolean didPublish;
 
     @Autowired
     public PublishCvToKafkaTaskJob(Scheduler scheduler, PublishCvToKafkaTaskService service) {
@@ -22,32 +23,23 @@ public class PublishCvToKafkaTaskJob extends TaskJob {
     @Override
     public void executeTask(JobExecutionContext context) {
         var cvId = context.getMergedJobDataMap().getString("cvId");
-        didPublish = service.add(cvId);
+        service.add(cvId);
     }
 
     @Override
     protected void writeToReturnProps(JobExecutionContext context, JobDataMap props) {
         props.put("cvId", context.getMergedJobDataMap().getString("cvId"));
-        props.put("didPublish", didPublish);
-        props.put("didPublishToClient", context.getMergedJobDataMap().getBoolean("didPublishToClient"));
     }
 
-    public static JobDataMap props(String cvId, Boolean didPublishToClient) {
+    public static JobDataMap props(String cvId) {
         var props = new JobDataMap();
         props.put("cvId", cvId);
-        props.put("didPublishToClient", didPublishToClient);
         return props;
     }
 
-    public static JobDataMap mapReturnProps(JobDataMap props, PropsFunction function) {
+    public static JobDataMap mapReturnProps(JobDataMap props, Function<String, JobDataMap> function) {
         var cvId = props.getString("cvId");
-        var didPublish = props.getBoolean("didPublish");
-        var didPublishToClient = props.getBoolean("didPublishToClient");
-        return function.apply(cvId, didPublish, didPublishToClient);
-    }
-
-    interface PropsFunction {
-        JobDataMap apply(String cvId, Boolean didPublishToKafka, Boolean didPublishToClient);
+        return function.apply(cvId);
     }
 }
 

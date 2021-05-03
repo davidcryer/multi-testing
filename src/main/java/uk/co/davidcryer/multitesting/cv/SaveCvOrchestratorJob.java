@@ -1,6 +1,7 @@
 package uk.co.davidcryer.multitesting.cv;
 
 import org.quartz.JobDataMap;
+import org.quartz.JobExecutionContext;
 import org.quartz.Scheduler;
 import org.springframework.stereotype.Component;
 import uk.co.davidcryer.jobs.OrchestratorJob;
@@ -16,27 +17,27 @@ public class SaveCvOrchestratorJob extends OrchestratorJob {
     }
 
     @Override
-    protected Map<String, Workflow> getWorkflowMap() {
+    protected Map<String, Workflow> getWorkflowMap(JobExecutionContext context, JobDataMap props) {
         return Map.of(
-                "", props -> {
+                "", () -> {
                     var cv = props.getString("cv");
                     var storeCvProps= StoreCvTaskJob.props(cv);
                     triggerJob(StoreCvTaskJob.KEY, storeCvProps, true);
                 },
-                StoreCvTaskJob.KEY, props -> {
+                StoreCvTaskJob.KEY, () -> {
                     var clientPublishProps = StoreCvTaskJob.mapReturnProps(props, PublishCvToClientTaskJob::props);
                     triggerJob(PublishCvToClientTaskJob.KEY, clientPublishProps, true);
                 },
-                PublishCvToClientTaskJob.KEY, props -> {
+                PublishCvToClientTaskJob.KEY, () -> {
                     var kafkaPublishProps = PublishCvToClientTaskJob.mapReturnProps(props, PublishCvToKafkaTaskJob::props);
                     triggerJob(PublishCvToKafkaTaskJob.KEY, kafkaPublishProps, true);
                 },
-                PublishCvToKafkaTaskJob.KEY, props -> {
+                PublishCvToKafkaTaskJob.KEY, () -> {
 //                    var updateCvWithPublishProps = PublishCvToClientTaskJob.mapReturnProps(props, (cvId, didPublishToClient) ->
 //                            PublishCvToKafkaTaskJob.mapReturnProps(props, (ignore, didPublishToKafka) ->
 //                                    UpdateCvWithPublishSuccessTaskJob.props(cvId, didPublishToClient, didPublishToKafka)));
-                    var updateCvWithPublishProps = PublishCvToKafkaTaskJob.mapReturnProps(props, UpdateCvWithPublishSuccessTaskJob::props);
-                    triggerJob(UpdateCvWithPublishSuccessTaskJob.KEY, updateCvWithPublishProps, false);
+                    var updateCvWithPublishProps = PublishCvToKafkaTaskJob.mapReturnProps(props, UpdateCvWithPublishStatusTaskJob::props);
+                    triggerJob(UpdateCvWithPublishStatusTaskJob.KEY, updateCvWithPublishProps, false);
                 }
         );
     }

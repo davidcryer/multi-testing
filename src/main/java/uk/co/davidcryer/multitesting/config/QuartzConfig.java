@@ -36,7 +36,7 @@ public class QuartzConfig {
                 jobDetail(StoreCvTaskJob.class, StoreCvTaskJob.KEY),
                 jobDetail(PublishCvToClientTaskJob.class, PublishCvToClientTaskJob.KEY),
                 jobDetail(PublishCvToKafkaTaskJob.class, PublishCvToKafkaTaskJob.KEY),
-                jobDetail(UpdateCvWithPublishSuccessTaskJob.class, UpdateCvWithPublishSuccessTaskJob.KEY)
+                jobDetail(UpdateCvWithPublishStatusTaskJob.class, UpdateCvWithPublishStatusTaskJob.KEY)
         };
     }
 

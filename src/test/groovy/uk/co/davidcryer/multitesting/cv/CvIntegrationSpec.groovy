@@ -80,6 +80,7 @@ class CvIntegrationSpec extends Specification {
             content == request.content
             isPublishedToClient
             isPublishedToKafka
+            isFullyPublished
         }
 
         and: "assert kafka message"

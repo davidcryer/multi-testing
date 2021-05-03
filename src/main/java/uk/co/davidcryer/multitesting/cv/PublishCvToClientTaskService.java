@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.co.davidcryer.multitesting.generated.tables.pojos.Cv;
 
+import java.util.function.Consumer;
+
 @Service
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @Slf4j
@@ -13,11 +15,11 @@ public class PublishCvToClientTaskService {
     private final CvRepository repository;
     private final CvClient client;
 
-    public boolean add(String cvId) {
-        return repository.get(cvId)
+    public void add(String cvId) {
+        repository.get(cvId)
                 .map(this::toClientRequest)
                 .map(client::post)
-                .orElse(false);
+                .ifPresent(updateCvWithPublishStatus(cvId));
     }
 
     private CvClientRequest toClientRequest(Cv cv) {
@@ -29,5 +31,9 @@ public class PublishCvToClientTaskService {
                 cv.getPhoneNumber(),
                 cv.getContent()
         );
+    }
+
+    private Consumer<Boolean> updateCvWithPublishStatus(String cvId) {
+        return didPublish -> repository.update(cvId, cv -> cv.setIsPublishedToClient(didPublish));
     }
 }

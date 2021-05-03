@@ -22,6 +22,7 @@ public class StoreCvTaskService {
                 request.getName(),
                 request.getContent(),
                 false,
+                false,
                 false
         );
         return cvRepository.add(cv).getId();

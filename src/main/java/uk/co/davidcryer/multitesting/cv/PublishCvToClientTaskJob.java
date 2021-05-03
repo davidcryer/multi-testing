@@ -8,13 +8,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.co.davidcryer.jobs.TaskJob;
 
-import java.util.function.BiFunction;
+import java.util.function.Function;
 
 @Component
 public class PublishCvToClientTaskJob extends TaskJob {
     public static final String KEY = "publish-cv-to-client";
     private final PublishCvToClientTaskService service;
-    private boolean didPublish;
 
     @Autowired
     public PublishCvToClientTaskJob(Scheduler scheduler, PublishCvToClientTaskService service) {
@@ -26,13 +25,12 @@ public class PublishCvToClientTaskJob extends TaskJob {
     protected void executeTask(JobExecutionContext context) throws JobExecutionException {
         var props = context.getMergedJobDataMap();
         var cvId = props.getString("cvId");
-        didPublish = service.add(cvId);
+        service.add(cvId);
     }
 
     @Override
     protected void writeToReturnProps(JobExecutionContext context, JobDataMap props) {
         props.put("cvId", context.getMergedJobDataMap().getString("cvId"));
-        props.put("didPublish", didPublish);
     }
 
     public static JobDataMap props(String cvId) {
@@ -41,9 +39,8 @@ public class PublishCvToClientTaskJob extends TaskJob {
         return props;
     }
 
-    public static JobDataMap mapReturnProps(JobDataMap props, BiFunction<String, Boolean, JobDataMap> function) {
+    public static JobDataMap mapReturnProps(JobDataMap props, Function<String, JobDataMap> function) {
         var cvId = props.getString("cvId");
-        var didPublish = props.getBoolean("didPublish");
-        return function.apply(cvId, didPublish);
+        return function.apply(cvId);
     }
 }

@@ -6,5 +6,6 @@ create table cv(
     name varchar(256),
     content varchar(1000),
     is_published_to_kafka boolean,
-    is_published_to_client boolean
+    is_published_to_client boolean,
+    is_fully_published boolean
 );

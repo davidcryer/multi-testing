@@ -13,18 +13,19 @@ import org.springframework.stereotype.Service;
 import uk.co.davidcryer.multitesting.generated.tables.pojos.Cv;
 
 import java.time.LocalDateTime;
+import java.util.function.Consumer;
 
 @Service
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class PublishCvToKafkaTaskService {
-    private final CvRepository cvRepository;
+    private final CvRepository repository;
     private final Producer<String, Object> kafkaProducer;
 
-    public boolean add(String cvId) {
-        return cvRepository.get(cvId)
+    public void add(String cvId) {
+        repository.get(cvId)
                 .map(this::toMessage)
                 .map(this::publish)
-                .orElse(false);
+                .ifPresent(updateCvWithPublishStatus(cvId));
     }
 
     private CvMessage toMessage(Cv cv) {
@@ -41,6 +42,10 @@ public class PublishCvToKafkaTaskService {
     private boolean publish(CvMessage cv) {
         kafkaProducer.send(new ProducerRecord<>(CvMessage.TOPIC, cv.getId(), cv));
         return true;
+    }
+
+    private Consumer<Boolean> updateCvWithPublishStatus(String cvId) {
+        return didPublish -> repository.update(cvId, cv -> cv.setIsPublishedToKafka(didPublish));
     }
 }
 
