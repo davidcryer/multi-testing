@@ -20,23 +20,23 @@ public abstract class OrchestratorJob implements Job {
     public void execute(JobExecutionContext context) throws JobExecutionException {
         var props = context.getMergedJobDataMap();
         try {
-            getWorkflow(context, props).execute();
+            getWorkflow(props).execute(context, props);
         } catch (SchedulerException e) {
             throw new JobExecutionException(e);
         }
     }
 
-    private Workflow getWorkflow(JobExecutionContext context, JobDataMap props) throws JobExecutionException {
+    private Workflow getWorkflow(JobDataMap props) throws JobExecutionException {
         var lastJob = props.containsKey(PROPS_JOB_LAST) ? props.getString(PROPS_JOB_LAST) : "";
         log.info("executing orchestrator with last job {}", lastJob);
-        var workflow = getWorkflowMap(context, props).get(lastJob);
+        var workflow = getWorkflowMap().get(lastJob);
         if (workflow != null) {
             return workflow;
         }
         throw new JobExecutionException("Workflow does not exist for last job " + lastJob);
     }
 
-    protected abstract Map<String, Workflow> getWorkflowMap(JobExecutionContext context, JobDataMap props);
+    protected abstract Map<String, Workflow> getWorkflowMap();
 
     protected void triggerJob(String name, JobDataMap props, boolean setNextJob) throws SchedulerException {
         if (setNextJob) {
@@ -46,6 +46,6 @@ public abstract class OrchestratorJob implements Job {
     }
 
     public interface Workflow {
-        void execute() throws SchedulerException;
+        void execute(JobExecutionContext context, JobDataMap props) throws SchedulerException;
     }
 }

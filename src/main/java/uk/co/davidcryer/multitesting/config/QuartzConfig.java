@@ -54,7 +54,7 @@ public class QuartzConfig {
         properties.setProperty("org.quartz.jobStore.driverDelegateClass", "org.quartz.impl.jdbcjobstore.PostgreSQLDelegate");
         properties.setProperty("org.quartz.jobStore.dataSource", "qzDS");
         properties.setProperty("org.quartz.jobStore.misfireThreshold", "60000");
-        properties.setProperty("org.quartz.jobStore.useProperties", "false");
+        properties.setProperty("org.quartz.jobStore.useProperties", "true");
         properties.setProperty("org.quartz.jobStore.isClustered", "true");
         properties.setProperty("org.quartz.jobStore.clusterCheckinInterval", "20000");
 
