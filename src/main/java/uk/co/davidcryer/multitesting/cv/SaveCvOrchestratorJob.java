@@ -13,10 +13,9 @@ import java.util.Map;
 @PersistJobDataAfterExecution
 @DisallowConcurrentExecution
 public class SaveCvOrchestratorJob extends OrchestratorJob {
-    public static final String KEY = "save-cv-orchestrator";
 
     public SaveCvOrchestratorJob(Scheduler scheduler) {
-        super(scheduler, KEY);
+        super(scheduler);
     }
 
     @Override
@@ -44,20 +43,20 @@ public class SaveCvOrchestratorJob extends OrchestratorJob {
     private final Workflow triggerStoreCvJob = (context, props) -> {
         var cv = props.getString("cv");
         var storeCvProps= StoreCvTaskJob.props(cv);
-        triggerJob(StoreCvTaskJob.KEY, storeCvProps, true);
+        triggerJob(context, StoreCvTaskJob.KEY, storeCvProps, true);
     };
 
     private final Workflow triggerPublishJobs = (context, props) -> {
         var clientPublishProps = StoreCvTaskJob.mapReturnProps(props, PublishCvToClientTaskJob::props);
-        triggerJob(PublishCvToClientTaskJob.KEY, clientPublishProps, true);
+        triggerJob(context, PublishCvToClientTaskJob.KEY, clientPublishProps, true);
 
-        var kafkaPublishProps = PublishCvToClientTaskJob.mapReturnProps(props, PublishCvToKafkaTaskJob::props);
-        triggerJob(PublishCvToKafkaTaskJob.KEY, kafkaPublishProps, true);
+        var kafkaPublishProps = StoreCvTaskJob.mapReturnProps(props, PublishCvToKafkaTaskJob::props);
+        triggerJob(context, PublishCvToKafkaTaskJob.KEY, kafkaPublishProps, true);
     };
 
     private final Workflow triggerUpdateCvWithPublishStatusJob = (context, props) -> {
         var updateCvWithPublishProps = PublishCvToKafkaTaskJob.mapReturnProps(props, UpdateCvWithPublishStatusTaskJob::props);
-        triggerJob(UpdateCvWithPublishStatusTaskJob.KEY, updateCvWithPublishProps, false);
+        triggerJob(context, UpdateCvWithPublishStatusTaskJob.KEY, updateCvWithPublishProps, false);
     };
 
     public static JobDataMap props(String request) {
@@ -66,16 +65,3 @@ public class SaveCvOrchestratorJob extends OrchestratorJob {
         return props;
     }
 }
-
-// TODO could drive via json-defined workflow
-/*
-{
-    "jobName": "store-cv",
-    "nextJob": {
-        "jobName": "publish-cv",
-        "nextJob": null,
-        "jobAdaptor": null
-    },
-    "jobAdaptor": "StoreCvToPublishCvTasksAdaptor"
-}
- */

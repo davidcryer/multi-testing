@@ -14,7 +14,6 @@ import static uk.co.davidcryer.jobs.TaskJob.PROPS_JOB_NEXT;
 @Slf4j
 public abstract class OrchestratorJob implements Job {
     private final Scheduler scheduler;
-    private final String key;
 
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
@@ -38,9 +37,10 @@ public abstract class OrchestratorJob implements Job {
 
     protected abstract Map<String, Workflow> getWorkflowMap();
 
-    protected void triggerJob(String name, JobDataMap props, boolean setNextJob) throws SchedulerException {
+    protected void triggerJob(JobExecutionContext context, String name, JobDataMap props, boolean setNextJob) throws SchedulerException {
         if (setNextJob) {
-            props.put(PROPS_JOB_NEXT, key);
+            var orchestratorJob = context.getJobDetail().getKey().getName();
+            props.put(PROPS_JOB_NEXT, orchestratorJob);
         }
         scheduler.triggerJob(JobKey.jobKey(name), props);
     }
