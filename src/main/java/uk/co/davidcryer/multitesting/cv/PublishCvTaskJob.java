@@ -21,11 +21,9 @@ public class PublishCvTaskJob extends ConcurrentTasksJob {
 
     @Override
     protected void triggerConcurrentTasks(JobExecutionContext context, JobDataMap props) throws SchedulerException {
-        var clientPublishProps = StoreCvTaskJob.mapReturnProps(props, PublishCvToClientTaskJob::props);
-        triggerJob(context, PublishCvToClientTaskJob.KEY, clientPublishProps);
-
-        var kafkaPublishProps = StoreCvTaskJob.mapReturnProps(props, PublishCvToKafkaTaskJob::props);
-        triggerJob(context, PublishCvToKafkaTaskJob.KEY, kafkaPublishProps);
+        var cvId = props.getString("cvId");
+        triggerJob(context, PublishCvToClientTaskJob.KEY, PublishCvToClientTaskJob.props(cvId));
+        triggerJob(context, PublishCvToKafkaTaskJob.KEY, PublishCvToKafkaTaskJob.props(cvId));
     }
 
     public static JobDataMap props(String cvId) {
