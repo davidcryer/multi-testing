@@ -7,8 +7,8 @@ import org.quartz.*;
 public abstract class AbstractTaskJob implements Job {
     static final String PROPS_JOB_LAST = "job.last";
     static final String PROPS_JOB_NEXT = "job.next";
-    protected final Scheduler scheduler;
-    protected final String key;
+    final Scheduler scheduler;
+    final String key;
 
     protected void triggerNextJob(JobExecutionContext context) throws JobExecutionException {
         try {
