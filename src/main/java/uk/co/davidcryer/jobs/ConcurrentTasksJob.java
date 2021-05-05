@@ -48,6 +48,7 @@ public abstract class ConcurrentTasksJob extends AbstractTaskJob {
                 .findFirst()
                 .orElseThrow(() -> new JobExecutionException(key + " does not have task for last job " + lastJob));
         jobProps.put(lastJob, task.successfulJobCondition.test(props));
+        //TODO allow for last job return data to be set to jobProps
         if (areAllTasksComplete(context, tasks)) {
             triggerNextJob(context);
         }
