@@ -23,7 +23,7 @@ public class PublishCvTaskJob extends ConcurrentTasksJob {
     protected List<Task> getTasks() {
         return List.of(
                 new Task(PublishCvToClientTaskJob.KEY, PublishCvTaskJob::mapToPublishCvToClientProps),
-                new ConcurrentTask(PublishToKafkaConcurrentTasksJob.KEY, PublishCvTaskJob::mapToPublishCvToKafkaProps, PublishToKafkaConcurrentTasksJob.class)
+                new ConcurrentTask(PublishCvToKafkaConcurrentTasksJob.KEY, PublishCvTaskJob::mapToPublishCvToKafkaProps, PublishCvToKafkaConcurrentTasksJob.class)
         );
     }
 
@@ -34,7 +34,7 @@ public class PublishCvTaskJob extends ConcurrentTasksJob {
 
     private static JobDataMap mapToPublishCvToKafkaProps(JobDataMap props) {
         var cvId = props.getString("cvId");
-        return PublishToKafkaConcurrentTasksJob.props(cvId);
+        return PublishCvToKafkaConcurrentTasksJob.props(cvId);
     }
 
     public static JobDataMap props(String cvId) {

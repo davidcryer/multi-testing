@@ -12,17 +12,17 @@ import java.util.List;
 @Component
 @DisallowConcurrentExecution
 @PersistJobDataAfterExecution
-public class PublishToKafkaConcurrentTasksJob extends ConcurrentTasksJob {
+public class PublishCvToKafkaConcurrentTasksJob extends ConcurrentTasksJob {
     public static final String KEY = "publish-to-kafka-tasks";
 
-    public PublishToKafkaConcurrentTasksJob(Scheduler scheduler) {
+    public PublishCvToKafkaConcurrentTasksJob(Scheduler scheduler) {
         super(scheduler, KEY);
     }
 
     @Override
     protected List<Task> getTasks() {
         return List.of(
-                new Task(PublishCvToKafkaTaskJob.KEY, PublishToKafkaConcurrentTasksJob::mapToPublishCvToKafkaProps),
+                new Task(PublishCvToKafkaTaskJob.KEY, PublishCvToKafkaConcurrentTasksJob::mapToPublishCvToKafkaProps),
                 new Task(NoOpJob.KEY, JobDataMap::new)
         );
     }
