@@ -55,4 +55,8 @@ public abstract class OrchestratorJob implements Job {
         scheduler.addJob(JobBuilder.newJob(clazz).withIdentity(name).storeDurably().usingJobData(jobProps).build(), false);
         scheduler.triggerJob(JobKey.jobKey(name), props);
     }
+
+    public interface Workflow {
+        void execute(JobExecutionContext context, JobDataMap props) throws SchedulerException;
+    }
 }
