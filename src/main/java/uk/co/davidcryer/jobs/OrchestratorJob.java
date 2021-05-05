@@ -8,8 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.Map;
 import java.util.UUID;
 
-import static uk.co.davidcryer.jobs.TaskJob.PROPS_JOB_LAST;
-import static uk.co.davidcryer.jobs.TaskJob.PROPS_JOB_NEXT;
+import static uk.co.davidcryer.jobs.AbstractTaskJob.PROPS_JOB_LAST;
+import static uk.co.davidcryer.jobs.AbstractTaskJob.PROPS_JOB_NEXT;
 
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @Slf4j
