@@ -20,10 +20,10 @@ public class PublishCvTaskJob extends ConcurrentTasksJob {
     }
 
     @Override
-    protected List<ConcurrentTask> getConcurrentTasks() {
+    protected List<Task> getTasks() {
         return List.of(
-                new ConcurrentTask(PublishCvToClientTaskJob.KEY, PublishCvTaskJob::mapToPublishCvToClientProps),
-                new ConcurrentTask(PublishCvToKafkaTaskJob.KEY, PublishCvTaskJob::mapToPublishCvToKafkaProps)
+                new Task(PublishCvToClientTaskJob.KEY, PublishCvTaskJob::mapToPublishCvToClientProps),
+                new ConcurrentTask(PublishToKafkaConcurrentTasksJob.KEY, PublishCvTaskJob::mapToPublishCvToKafkaProps, PublishToKafkaConcurrentTasksJob.class)
         );
     }
 
@@ -34,7 +34,7 @@ public class PublishCvTaskJob extends ConcurrentTasksJob {
 
     private static JobDataMap mapToPublishCvToKafkaProps(JobDataMap props) {
         var cvId = props.getString("cvId");
-        return PublishCvToKafkaTaskJob.props(cvId);
+        return PublishToKafkaConcurrentTasksJob.props(cvId);
     }
 
     public static JobDataMap props(String cvId) {
@@ -45,7 +45,7 @@ public class PublishCvTaskJob extends ConcurrentTasksJob {
 
     @Override
     protected void writeToReturnProps(JobExecutionContext context, JobDataMap props) {
-        props.put("cvId", context.getMergedJobDataMap().getString("cvId"));
+        props.put("cvId", context.getJobDetail().getJobDataMap().getString("cvId"));
     }
 
     public static JobDataMap mapReturnProps(JobDataMap props, Function<String, JobDataMap> function) {

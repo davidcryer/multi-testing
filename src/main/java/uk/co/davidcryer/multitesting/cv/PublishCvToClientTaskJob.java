@@ -8,8 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.co.davidcryer.jobs.TaskJob;
 
-import java.util.function.Function;
-
 @Component
 public class PublishCvToClientTaskJob extends TaskJob {
     public static final String KEY = "publish-cv-to-client";
@@ -28,19 +26,9 @@ public class PublishCvToClientTaskJob extends TaskJob {
         service.add(cvId);
     }
 
-    @Override
-    protected void writeToReturnProps(JobExecutionContext context, JobDataMap props) {
-        props.put("cvId", context.getMergedJobDataMap().getString("cvId"));
-    }
-
     public static JobDataMap props(String cvId) {
         var props = new JobDataMap();
         props.put("cvId", cvId);
         return props;
-    }
-
-    public static JobDataMap mapReturnProps(JobDataMap props, Function<String, JobDataMap> function) {
-        var cvId = props.getString("cvId");
-        return function.apply(cvId);
     }
 }
