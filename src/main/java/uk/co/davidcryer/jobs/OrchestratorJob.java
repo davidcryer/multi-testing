@@ -6,6 +6,7 @@ import org.quartz.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Map;
+import java.util.UUID;
 
 import static uk.co.davidcryer.jobs.TaskJob.PROPS_JOB_LAST;
 import static uk.co.davidcryer.jobs.TaskJob.PROPS_JOB_NEXT;
@@ -14,6 +15,7 @@ import static uk.co.davidcryer.jobs.TaskJob.PROPS_JOB_NEXT;
 @Slf4j
 public abstract class OrchestratorJob implements Job {
     private final Scheduler scheduler;
+    private final String key;
 
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
@@ -37,15 +39,20 @@ public abstract class OrchestratorJob implements Job {
 
     protected abstract Map<String, Workflow> getWorkflowMap();
 
-    protected void triggerJob(JobExecutionContext context, String name, JobDataMap props, boolean setNextJob) throws SchedulerException {
+    protected void triggerJob(String name, JobDataMap props, boolean setNextJob) throws SchedulerException {
         if (setNextJob) {
-            var orchestratorJob = context.getJobDetail().getKey().getName();
-            props.put(PROPS_JOB_NEXT, orchestratorJob);
+            props.put(PROPS_JOB_NEXT, key);
         }
         scheduler.triggerJob(JobKey.jobKey(name), props);
     }
 
-    public interface Workflow {
-        void execute(JobExecutionContext context, JobDataMap props) throws SchedulerException;
+    protected void triggerConcurrentJob(Class<? extends Job> clazz, String name, JobDataMap props, boolean setNextJob) throws SchedulerException {
+        var jobProps = new JobDataMap();
+        if (setNextJob) {
+            jobProps.put(PROPS_JOB_NEXT, key);
+        }
+        name = name + "-" + UUID.randomUUID();
+        scheduler.addJob(JobBuilder.newJob(clazz).withIdentity(name).storeDurably().usingJobData(jobProps).build(), false);
+        scheduler.triggerJob(JobKey.jobKey(name), props);
     }
 }

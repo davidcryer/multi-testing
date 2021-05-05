@@ -8,10 +8,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 import org.springframework.scheduling.quartz.SpringBeanJobFactory;
-import uk.co.davidcryer.multitesting.cv.PublishCvToClientTaskJob;
-import uk.co.davidcryer.multitesting.cv.PublishCvToKafkaTaskJob;
-import uk.co.davidcryer.multitesting.cv.StoreCvTaskJob;
-import uk.co.davidcryer.multitesting.cv.UpdateCvWithPublishStatusTaskJob;
+import uk.co.davidcryer.multitesting.cv.*;
 
 import java.util.Properties;
 
@@ -35,6 +32,7 @@ public class QuartzConfig {
     @Bean
     public JobDetail[] jobDetails() {
         return new JobDetail[] {
+                jobDetail(SaveCvOrchestratorJob.class, SaveCvOrchestratorJob.KEY),
                 jobDetail(StoreCvTaskJob.class, StoreCvTaskJob.KEY),
                 jobDetail(PublishCvToClientTaskJob.class, PublishCvToClientTaskJob.KEY),
                 jobDetail(PublishCvToKafkaTaskJob.class, PublishCvToKafkaTaskJob.KEY),
