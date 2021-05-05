@@ -5,21 +5,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.quartz.*;
 
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 @Slf4j
 @DisallowConcurrentExecution
 @PersistJobDataAfterExecution
 public abstract class ConcurrentTasksJob extends AbstractTaskJob {
-    private final Map<String, ConcurrentTask> concurrentTaskMap;
 
-    public ConcurrentTasksJob(Scheduler scheduler, String key, List<ConcurrentTask> concurrentTasks) {
+    public ConcurrentTasksJob(Scheduler scheduler, String key) {
         super(scheduler, key);
-        this.concurrentTaskMap = concurrentTasks.stream()
-                .collect(Collectors.toMap(ConcurrentTask::getKey, Function.identity()));
     }
 
     @Override
@@ -39,19 +34,20 @@ public abstract class ConcurrentTasksJob extends AbstractTaskJob {
     }
 
     protected void triggerConcurrentTasks(JobExecutionContext context, JobDataMap props) throws SchedulerException {
-        for (ConcurrentTask task : concurrentTaskMap.values()) {
+        for (ConcurrentTask task : getConcurrentTasks()) {
             triggerJob(context, task.getKey(), task.propsMapper.apply(props));
         }
     }
 
     private void handleLastJob(JobExecutionContext context, JobDataMap props, String lastJob) throws SchedulerException {
         var jobProps = context.getJobDetail().getJobDataMap();
-        var concurrentTask = concurrentTaskMap.get(lastJob);
-        if (concurrentTask == null) {
-            throw new JobExecutionException("ConcurrentTask does not exist for last job " + lastJob);
-        }
+        var concurrentTasks = getConcurrentTasks();
+        var concurrentTask = concurrentTasks.stream()
+                .filter(task -> task.getKey().equals(lastJob))
+                .findFirst()
+                .orElseThrow(() -> new JobExecutionException("Concurrent task does not exist for last job " + lastJob));
         jobProps.put(lastJob, concurrentTask.successfulJobCondition.test(props));
-        if (areAllConcurrentTasksComplete(context)) {
+        if (areAllConcurrentTasksComplete(context, concurrentTasks)) {
             triggerNextJob(context);
         }
     }
@@ -61,14 +57,15 @@ public abstract class ConcurrentTasksJob extends AbstractTaskJob {
         scheduler.triggerJob(JobKey.jobKey(name), props);
     }
 
-    private boolean areAllConcurrentTasksComplete(JobExecutionContext context) {
+    private boolean areAllConcurrentTasksComplete(JobExecutionContext context, List<ConcurrentTask> concurrentTasks) {
         var props = context.getJobDetail().getJobDataMap();
         Predicate<String> predicate = key -> props.containsKey(key) && props.getBoolean(key);
-        return concurrentTaskMap.values()
-                .stream()
+        return concurrentTasks.stream()
                 .map(ConcurrentTask::getKey)
                 .allMatch(predicate);
     }
+
+    protected abstract List<ConcurrentTask> getConcurrentTasks();
 
     @Getter
     public static class ConcurrentTask {

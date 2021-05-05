@@ -13,10 +13,19 @@ import java.util.function.Function;
 @Component
 public class PublishCvTaskJob extends ConcurrentTasksJob {
     public static final String KEY = "publish-cv";
-    private static final List<ConcurrentTask> CONCURRENT_TASKS = List.of(
-            new ConcurrentTask(PublishCvToClientTaskJob.KEY, PublishCvTaskJob::mapToPublishCvToClientProps),
-            new ConcurrentTask(PublishCvToKafkaTaskJob.KEY, PublishCvTaskJob::mapToPublishCvToKafkaProps)
-    );
+
+    @Autowired
+    public PublishCvTaskJob(Scheduler scheduler) {
+        super(scheduler, KEY);
+    }
+
+    @Override
+    protected List<ConcurrentTask> getConcurrentTasks() {
+        return List.of(
+                new ConcurrentTask(PublishCvToClientTaskJob.KEY, PublishCvTaskJob::mapToPublishCvToClientProps),
+                new ConcurrentTask(PublishCvToKafkaTaskJob.KEY, PublishCvTaskJob::mapToPublishCvToKafkaProps)
+        );
+    }
 
     private static JobDataMap mapToPublishCvToClientProps(JobDataMap props) {
         var cvId = props.getString("cvId");
@@ -26,11 +35,6 @@ public class PublishCvTaskJob extends ConcurrentTasksJob {
     private static JobDataMap mapToPublishCvToKafkaProps(JobDataMap props) {
         var cvId = props.getString("cvId");
         return PublishCvToKafkaTaskJob.props(cvId);
-    }
-
-    @Autowired
-    public PublishCvTaskJob(Scheduler scheduler) {
-        super(scheduler, KEY, CONCURRENT_TASKS);
     }
 
     public static JobDataMap props(String cvId) {
