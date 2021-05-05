@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.*;
 
-import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -16,10 +16,9 @@ import java.util.stream.Collectors;
 public abstract class ConcurrentTasksJob extends AbstractTaskJob {
     private final Map<String, ConcurrentTask> concurrentTaskMap;
 
-    public ConcurrentTasksJob(Scheduler scheduler, String key, String... concurrentTaskKeys) {
+    public ConcurrentTasksJob(Scheduler scheduler, String key, List<ConcurrentTask> concurrentTasks) {
         super(scheduler, key);
-        this.concurrentTaskMap = Arrays.stream(concurrentTaskKeys)
-                .map(ConcurrentTask::new)
+        this.concurrentTaskMap = concurrentTasks.stream()
                 .collect(Collectors.toMap(ConcurrentTask::getKey, Function.identity()));
     }
 
@@ -39,7 +38,11 @@ public abstract class ConcurrentTasksJob extends AbstractTaskJob {
         }
     }
 
-    protected abstract void triggerConcurrentTasks(JobExecutionContext context, JobDataMap props) throws SchedulerException;
+    protected void triggerConcurrentTasks(JobExecutionContext context, JobDataMap props) throws SchedulerException {
+        for (ConcurrentTask task : concurrentTaskMap.values()) {
+            triggerJob(context, task.getKey(), task.propsMapper.apply(props));
+        }
+    }
 
     private void handleLastJob(JobExecutionContext context, JobDataMap props, String lastJob) throws SchedulerException {
         var jobProps = context.getJobDetail().getJobDataMap();
@@ -70,15 +73,18 @@ public abstract class ConcurrentTasksJob extends AbstractTaskJob {
     @Getter
     public static class ConcurrentTask {
         private final String key;
+        private final Function<JobDataMap, JobDataMap> propsMapper;
         private final Predicate<JobDataMap> successfulJobCondition;
 
-        public ConcurrentTask(String key) {
+        public ConcurrentTask(String key, Function<JobDataMap, JobDataMap> propsMapper) {
             this.key = key;
+            this.propsMapper = propsMapper;
             successfulJobCondition = ignore -> true;
         }
 
-        public ConcurrentTask(String key, Predicate<JobDataMap> successfulJobCondition) {
+        public ConcurrentTask(String key, Function<JobDataMap, JobDataMap> propsMapper, Predicate<JobDataMap> successfulJobCondition) {
             this.key = key;
+            this.propsMapper = propsMapper;
             this.successfulJobCondition = successfulJobCondition;
         }
     }
