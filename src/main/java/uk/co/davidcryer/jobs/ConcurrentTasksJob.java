@@ -67,13 +67,15 @@ public abstract class ConcurrentTasksJob extends AbstractTaskJob {
 
     @Getter
     public static class Task {
+        static final Predicate<JobDataMap> IMPLIED_SUCCESS_PREDICATE = ignore -> true;
+        static final Consumer<JobDataMap> NO_OP_CONSUMER = props -> {};
         private final String key;
         private final Function<JobDataMap, JobDataMap> propsMapper;
         private final Predicate<JobDataMap> successfulJobCondition;
         private final Consumer<JobDataMap> returnPropsWriter;
 
         public Task(String key, Function<JobDataMap, JobDataMap> propsMapper) {
-            this(key, propsMapper, ignore -> true, props -> {});
+            this(key, propsMapper, IMPLIED_SUCCESS_PREDICATE, NO_OP_CONSUMER);
         }
 
         public Task(String key,
@@ -99,15 +101,14 @@ public abstract class ConcurrentTasksJob extends AbstractTaskJob {
         public ConcurrentTask(String key,
                               Function<JobDataMap, JobDataMap> propsMapper,
                               Class<? extends Job> concurrentJobClass) {
-            super(key, propsMapper);
-            this.concurrentJobClass = concurrentJobClass;
+            this(key, propsMapper, IMPLIED_SUCCESS_PREDICATE, concurrentJobClass);
         }
 
         public ConcurrentTask(String key,
                     Function<JobDataMap, JobDataMap> propsMapper,
                     Predicate<JobDataMap> successfulJobCondition,
                     Class<? extends Job> concurrentJobClass) {
-            this(key, propsMapper, successfulJobCondition, props -> {}, concurrentJobClass);
+            this(key, propsMapper, successfulJobCondition, NO_OP_CONSUMER, concurrentJobClass);
         }
 
         public ConcurrentTask(String key,
