@@ -51,9 +51,9 @@ public class TestKafkaConsumer<V> implements Closeable {
                     throw new AssertionError("Only consumed " + messages.size() +
                             " of the expected " + expectedNumMessages + " messages within timeout limit: " + messages);
                 }
-                if (messages.size() > expectedNumMessages) {
-                    throw new AssertionError("Consumed " + messages.size() + " messages, but expected only " + expectedNumMessages + ": " + messages);
-                }
+            }
+            if (messages.size() > expectedNumMessages) {
+                throw new AssertionError("Consumed " + messages.size() + " messages, but expected only " + expectedNumMessages + ": " + messages);
             }
             return new ArrayList<>(messages);
         }
