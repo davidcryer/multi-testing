@@ -62,13 +62,13 @@ class CvIntegrationSpec extends Specification {
 
         when:
         def response = template.postForEntity"/cvs", Requests.post(request), String
-        Thread.sleep 2000
 
         then: "assert response"
         response.statusCode == ACCEPTED
 
         and: "assert database entry"
         def kafkaMessage = kafkaHelper.get(1, 2000).get(0)
+        Thread.sleep 500
         def cv = dbOps.get(kafkaMessage.id)
 
         verifyAll(cv) {
