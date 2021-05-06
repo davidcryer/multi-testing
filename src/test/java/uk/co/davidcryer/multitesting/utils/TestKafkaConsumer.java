@@ -3,7 +3,6 @@ package uk.co.davidcryer.multitesting.utils;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.common.errors.TimeoutException;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
@@ -21,13 +20,43 @@ import java.util.Objects;
 public class TestKafkaConsumer<V> implements Closeable {
     private final KafkaMessageListenerContainer<String, V> container;
     private final List<V> messages = new ArrayList<>();
+    private final Object lock = new Object();
+    private Integer awaitingMessageCount = null;
 
     public TestKafkaConsumer(KafkaMessageListenerContainer<String, V> container) {
         this.container = container;
-        container.setupMessageListener((MessageListener<String, V>) record ->
-                messages.add(record.value())
-        );
+        start();
+    }
+
+    private void start() {
+        container.setupMessageListener((MessageListener<String, V>) record -> {
+            synchronized (lock) {
+                messages.add(record.value());
+                if (messages.size() == awaitingMessageCount) {
+                    lock.notifyAll();
+                }
+            }
+        });
         container.start();
+    }
+
+    public List<V> get(int expectedNumMessages, long timeoutMillis) throws InterruptedException {
+        synchronized (lock) {
+            if (messages.size() < expectedNumMessages) {
+                awaitingMessageCount = expectedNumMessages;
+                lock.wait(timeoutMillis);
+                awaitingMessageCount = null;
+            }
+            if (messages.size() < expectedNumMessages) {
+                throw new AssertionError("Only consumed " + messages.size() +
+                        " of the expected " + expectedNumMessages + " messages within timeout limit: " + messages);
+            }
+            if (messages.size() > expectedNumMessages) {
+                throw new AssertionError("Consumed " + messages.size() + " messages, but expected only " + expectedNumMessages + ": " + messages);
+            }
+
+            return new ArrayList<>(messages);
+        }
     }
 
     @Override
@@ -37,23 +66,6 @@ public class TestKafkaConsumer<V> implements Closeable {
 
     public void clear() {
         messages.clear();
-    }
-
-    public List<V> get(int expectedNumMessages, long timeoutMillis) throws TimeoutException, InterruptedException {
-        var timeoutTime = System.currentTimeMillis() + timeoutMillis;
-
-        while (messages.size() < expectedNumMessages) {
-            if (System.currentTimeMillis() > timeoutTime) {
-                throw new TimeoutException("Only consumed " + messages.size() +
-                        " of the expected " + expectedNumMessages + " messages within timeout limit: " + messages);
-            }
-            Thread.sleep(50);
-        }
-        if (messages.size() > expectedNumMessages) {
-            throw new AssertionError("Consumed " + messages.size() + " messages, but expected only " + expectedNumMessages + ": " + messages);
-        }
-
-        return new ArrayList<>(messages);
     }
 
     public static Builder<?> builder() {
