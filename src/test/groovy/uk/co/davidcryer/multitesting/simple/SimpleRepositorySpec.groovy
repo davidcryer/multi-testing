@@ -31,7 +31,7 @@ class SimpleRepositorySpec extends Specification {
 
     def "get for entity that doesn't exist returns empty"() {
         expect:
-        repository.get(1) == Optional.empty()
+        repository.get(Integer.MAX_VALUE) == Optional.empty()
     }
 
     def "get returns matching entity"() {
