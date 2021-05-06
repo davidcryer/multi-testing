@@ -6,6 +6,7 @@ import org.quartz.*;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -47,9 +48,8 @@ public abstract class ConcurrentTasksJob extends AbstractTaskJob {
                 .filter(t -> t.getKey().equals(lastJob))
                 .findFirst()
                 .orElseThrow(() -> new JobExecutionException(key + " does not have task for last job " + lastJob));
-        jobProps.put(lastJob, task.successfulJobCondition.test(props));
-        //TODO allow for last job return data to be set to jobProps
-        // task.setReturnProps(jobProps)
+        jobProps.put(lastJob, task.getSuccessfulJobCondition().test(props));
+        task.getReturnPropsWriter().accept(jobProps);
         if (areAllTasksComplete(context, tasks)) {
             triggerNextJob(context);
         }
@@ -70,15 +70,20 @@ public abstract class ConcurrentTasksJob extends AbstractTaskJob {
         private final String key;
         private final Function<JobDataMap, JobDataMap> propsMapper;
         private final Predicate<JobDataMap> successfulJobCondition;
+        private final Consumer<JobDataMap> returnPropsWriter;
 
         public Task(String key, Function<JobDataMap, JobDataMap> propsMapper) {
-            this(key, propsMapper, ignore -> true);
+            this(key, propsMapper, ignore -> true, props -> {});
         }
 
-        public Task(String key, Function<JobDataMap, JobDataMap> propsMapper, Predicate<JobDataMap> successfulJobCondition) {
+        public Task(String key,
+                    Function<JobDataMap, JobDataMap> propsMapper,
+                    Predicate<JobDataMap> successfulJobCondition,
+                    Consumer<JobDataMap> returnPropsWriter) {
             this.key = key;
             this.propsMapper = propsMapper;
             this.successfulJobCondition = successfulJobCondition;
+            this.returnPropsWriter = returnPropsWriter;
         }
 
         protected void triggerJob(JobExecutionContext context, JobDataMap props, Scheduler scheduler) throws SchedulerException {
@@ -88,7 +93,6 @@ public abstract class ConcurrentTasksJob extends AbstractTaskJob {
         }
     }
 
-    @Getter
     public static class ConcurrentTask extends Task {
         private final Class<? extends Job> concurrentJobClass;
 
@@ -103,7 +107,15 @@ public abstract class ConcurrentTasksJob extends AbstractTaskJob {
                     Function<JobDataMap, JobDataMap> propsMapper,
                     Predicate<JobDataMap> successfulJobCondition,
                     Class<? extends Job> concurrentJobClass) {
-            super(key, propsMapper, successfulJobCondition);
+            this(key, propsMapper, successfulJobCondition, props -> {}, concurrentJobClass);
+        }
+
+        public ConcurrentTask(String key,
+                              Function<JobDataMap, JobDataMap> propsMapper,
+                              Predicate<JobDataMap> successfulJobCondition,
+                              Consumer<JobDataMap> returnPropsWriter,
+                              Class<? extends Job> concurrentJobClass) {
+            super(key, propsMapper, successfulJobCondition, returnPropsWriter);
             this.concurrentJobClass = concurrentJobClass;
         }
 
