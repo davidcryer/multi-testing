@@ -3,29 +3,36 @@ package uk.co.davidcryer.multitesting.config;
 import org.quartz.Job;
 import org.quartz.JobBuilder;
 import org.quartz.JobDetail;
+import org.quartz.JobListener;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 import org.springframework.scheduling.quartz.SpringBeanJobFactory;
 import uk.co.davidcryer.multitesting.cv.*;
+import uk.co.davidcryer.quartz.QuartzJobConfig;
+import uk.co.davidcryer.quartz.WaitForJobsOnShutdownJobListener;
 
 import java.util.Properties;
 
 @Configuration
+@Import(QuartzJobConfig.class)
 public class QuartzConfig {
 
     @Bean
-    public SchedulerFactoryBean quartzScheduler(ApplicationContext applicationContext, JobDetail[] jobDetails) {
+    public SchedulerFactoryBean quartzScheduler(ApplicationContext applicationContext,
+                                                JobDetail[] jobDetails,
+                                                JobListener[] jobListeners) {
         SchedulerFactoryBean schedulerFactoryBean = new SchedulerFactoryBean();
         SpringBeanJobFactory jobFactory = new SpringBeanJobFactory();
         jobFactory.setApplicationContext(applicationContext);
         schedulerFactoryBean.setJobFactory(jobFactory);
         schedulerFactoryBean.setAutoStartup(true);
-        schedulerFactoryBean.setWaitForJobsToCompleteOnShutdown(true);
         schedulerFactoryBean.setOverwriteExistingJobs(false);
         schedulerFactoryBean.setQuartzProperties(getQuartzProperties());
         schedulerFactoryBean.setJobDetails(jobDetails);
+        schedulerFactoryBean.setGlobalJobListeners(jobListeners);
         return schedulerFactoryBean;
     }
 
@@ -38,6 +45,13 @@ public class QuartzConfig {
                 jobDetail(PublishCvToKafkaTaskJob.class, PublishCvToKafkaTaskJob.KEY),
                 jobDetail(UpdateCvWithPublishStatusTaskJob.class, UpdateCvWithPublishStatusTaskJob.KEY),
                 jobDetail(NoOpJob.class, NoOpJob.KEY)
+        };
+    }
+
+    @Bean
+    public JobListener[] jobListeners(WaitForJobsOnShutdownJobListener waitForJobsOnShutdownJobListener) {
+        return new JobListener[] {
+                waitForJobsOnShutdownJobListener
         };
     }
 
