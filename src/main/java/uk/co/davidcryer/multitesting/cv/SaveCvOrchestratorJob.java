@@ -5,7 +5,7 @@ import org.quartz.JobDataMap;
 import org.quartz.PersistJobDataAfterExecution;
 import org.quartz.Scheduler;
 import org.springframework.stereotype.Component;
-import uk.co.davidcryer.jobs.OrchestratorJob;
+import uk.co.davidcryer.quartz.OrchestratorJob;
 
 import java.util.Map;
 

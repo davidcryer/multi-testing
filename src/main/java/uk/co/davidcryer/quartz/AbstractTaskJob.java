@@ -1,4 +1,4 @@
-package uk.co.davidcryer.jobs;
+package uk.co.davidcryer.quartz;
 
 import lombok.RequiredArgsConstructor;
 import org.quartz.*;

@@ -1,4 +1,4 @@
-package uk.co.davidcryer.jobs;
+package uk.co.davidcryer.quartz;
 
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.JobExecutionContext;

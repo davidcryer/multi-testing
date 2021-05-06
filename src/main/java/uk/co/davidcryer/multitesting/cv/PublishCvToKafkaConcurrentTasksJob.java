@@ -5,7 +5,7 @@ import org.quartz.JobDataMap;
 import org.quartz.PersistJobDataAfterExecution;
 import org.quartz.Scheduler;
 import org.springframework.stereotype.Component;
-import uk.co.davidcryer.jobs.ConcurrentTasksJob;
+import uk.co.davidcryer.quartz.ConcurrentTasksJob;
 
 import java.util.List;
 

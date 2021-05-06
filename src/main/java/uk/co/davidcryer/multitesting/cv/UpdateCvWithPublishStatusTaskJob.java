@@ -4,7 +4,7 @@ import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.Scheduler;
 import org.springframework.stereotype.Component;
-import uk.co.davidcryer.jobs.TaskJob;
+import uk.co.davidcryer.quartz.TaskJob;
 
 @Component
 public class UpdateCvWithPublishStatusTaskJob extends TaskJob {

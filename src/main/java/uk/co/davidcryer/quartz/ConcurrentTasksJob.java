@@ -1,4 +1,4 @@
-package uk.co.davidcryer.jobs;
+package uk.co.davidcryer.quartz;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;

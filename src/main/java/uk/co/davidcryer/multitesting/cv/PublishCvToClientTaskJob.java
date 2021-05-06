@@ -6,7 +6,7 @@ import org.quartz.JobExecutionException;
 import org.quartz.Scheduler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import uk.co.davidcryer.jobs.TaskJob;
+import uk.co.davidcryer.quartz.TaskJob;
 
 @Component
 public class PublishCvToClientTaskJob extends TaskJob {

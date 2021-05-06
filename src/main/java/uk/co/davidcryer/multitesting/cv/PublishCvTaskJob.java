@@ -5,7 +5,7 @@ import org.quartz.JobExecutionContext;
 import org.quartz.Scheduler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import uk.co.davidcryer.jobs.ConcurrentTasksJob;
+import uk.co.davidcryer.quartz.ConcurrentTasksJob;
 
 import java.util.List;
 import java.util.function.Function;
