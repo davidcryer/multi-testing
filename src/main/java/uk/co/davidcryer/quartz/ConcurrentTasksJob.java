@@ -13,7 +13,7 @@ import java.util.function.Predicate;
 @Slf4j
 @DisallowConcurrentExecution
 @PersistJobDataAfterExecution
-public abstract class ConcurrentTasksJob extends AbstractTaskJob {
+public abstract class ConcurrentTasksJob extends AbstractTaskJob implements MarkableAsFinished {
 
     public ConcurrentTasksJob(Scheduler scheduler) {
         super(scheduler);
@@ -51,7 +51,7 @@ public abstract class ConcurrentTasksJob extends AbstractTaskJob {
         jobProps.put(lastJob, task.getSuccessfulJobCondition().test(props));
         task.getReturnPropsWriter().accept(jobProps);
         if (areAllTasksComplete(context, tasks)) {
-            markFinished(jobProps);
+            markAsFinished(context, jobProps);
             triggerNextJob(context);
         }
     }
@@ -62,10 +62,6 @@ public abstract class ConcurrentTasksJob extends AbstractTaskJob {
         return tasks.stream()
                 .map(Task::getKey)
                 .allMatch(predicate);
-    }
-
-    private void markFinished(JobDataMap props) {
-        props.put("isFinished", true);
     }
 
     protected abstract List<Task> getTasks();

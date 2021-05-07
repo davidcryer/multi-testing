@@ -12,7 +12,7 @@ import static uk.co.davidcryer.quartz.AbstractTaskJob.*;
 
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @Slf4j
-public abstract class OrchestratorJob implements Job {
+public abstract class OrchestratorJob implements Job, MarkableAsFinished {
     private final Scheduler scheduler;
 
     @Override
@@ -59,10 +59,6 @@ public abstract class OrchestratorJob implements Job {
         var jobKey = JobKey.jobKey(name, UUID.randomUUID().toString());
         scheduler.addJob(JobBuilder.newJob(clazz).withIdentity(jobKey).storeDurably().usingJobData(props).build(), false);
         scheduler.triggerJob(jobKey);
-    }
-
-    protected void markFinished(JobExecutionContext context, JobDataMap props) {
-        context.getJobDetail().getJobDataMap().put("isFinished", true);
     }
 
     public interface Workflow {

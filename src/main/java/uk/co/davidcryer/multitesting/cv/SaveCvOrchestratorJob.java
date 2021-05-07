@@ -25,7 +25,7 @@ public class SaveCvOrchestratorJob extends OrchestratorJob {
                 "", this.triggerStoreCvJob,
                 StoreCvTaskJob.KEY, this.triggerPublishJobs,
                 PublishCvTaskJob.KEY, this.triggerUpdateCvWithPublishStatusJob,
-                UpdateCvWithPublishStatusTaskJob.KEY, this::markFinished
+                UpdateCvWithPublishStatusTaskJob.KEY, this::markAsFinished
         );
     }
 

@@ -10,6 +10,8 @@ import org.quartz.listeners.JobListenerSupport;
 
 import java.util.Set;
 
+import static uk.co.davidcryer.quartz.MarkableAsFinished.isFinished;
+
 @RequiredArgsConstructor
 @Slf4j
 public class DeleteOldJobsListener extends JobListenerSupport {
@@ -40,8 +42,6 @@ public class DeleteOldJobsListener extends JobListenerSupport {
     private boolean shouldDeleteJob(JobExecutionContext context) {
         var jobName = context.getJobDetail().getKey().getName();
         var jobProps = context.getJobDetail().getJobDataMap();
-        return jobsRequiringDeletion.contains(jobName)
-                && jobProps.containsKey("isFinished")
-                && jobProps.getBoolean("isFinished");
+        return jobsRequiringDeletion.contains(jobName) && isFinished(jobProps);
     }
 }
