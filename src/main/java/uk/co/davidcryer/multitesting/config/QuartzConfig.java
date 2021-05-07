@@ -11,13 +11,13 @@ import org.springframework.context.annotation.Import;
 import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 import org.springframework.scheduling.quartz.SpringBeanJobFactory;
 import uk.co.davidcryer.multitesting.cv.*;
-import uk.co.davidcryer.quartz.QuartzJobConfig;
+import uk.co.davidcryer.quartz.WaitForJobsOnShutdownConfig;
 import uk.co.davidcryer.quartz.WaitForJobsOnShutdownJobListener;
 
 import java.util.Properties;
 
 @Configuration
-@Import(QuartzJobConfig.class)
+@Import(WaitForJobsOnShutdownConfig.class)
 public class QuartzConfig {
 
     @Bean
