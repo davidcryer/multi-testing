@@ -24,7 +24,8 @@ public class SaveCvOrchestratorJob extends OrchestratorJob {
         return Map.of(
                 "", this.triggerStoreCvJob,
                 StoreCvTaskJob.KEY, this.triggerPublishJobs,
-                PublishCvTaskJob.KEY, this.triggerUpdateCvWithPublishStatusJob
+                PublishCvTaskJob.KEY, this.triggerUpdateCvWithPublishStatusJob,
+                UpdateCvWithPublishStatusTaskJob.KEY, this::markFinished
         );
     }
 
@@ -41,7 +42,7 @@ public class SaveCvOrchestratorJob extends OrchestratorJob {
 
     private final Workflow triggerUpdateCvWithPublishStatusJob = (context, props) -> {
         var updateCvWithPublishProps = PublishCvTaskJob.mapReturnProps(props, UpdateCvWithPublishStatusTaskJob::props);
-        triggerJob(context, UpdateCvWithPublishStatusTaskJob.KEY, updateCvWithPublishProps, false);
+        triggerJob(context, UpdateCvWithPublishStatusTaskJob.KEY, updateCvWithPublishProps, true);
     };
 
     public static JobDataMap props(String request) {

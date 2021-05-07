@@ -1,9 +1,7 @@
 package uk.co.davidcryer.multitesting.config;
 
-import org.quartz.Job;
-import org.quartz.JobBuilder;
-import org.quartz.JobDetail;
-import org.quartz.JobListener;
+import lombok.SneakyThrows;
+import org.quartz.*;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,6 +13,7 @@ import uk.co.davidcryer.quartz.WaitForJobsOnShutdownConfig;
 import uk.co.davidcryer.quartz.WaitForJobsOnShutdownJobListener;
 
 import java.util.Properties;
+import java.util.Set;
 
 @Configuration
 @Import(WaitForJobsOnShutdownConfig.class)
@@ -36,10 +35,26 @@ public class QuartzConfig {
         return schedulerFactoryBean;
     }
 
+    @SneakyThrows
+    @Bean
+    public Scheduler scheduler(SchedulerFactoryBean schedulerFactoryBean, Set<String> jobsRequiringCleanup) {
+        var scheduler = schedulerFactoryBean.getScheduler();
+        scheduler.getListenerManager().addJobListener(new DeleteOldJobsListener(scheduler, jobsRequiringCleanup));
+        return scheduler;
+    }
+
+    @Bean
+    public Set<String> jobsRequiringCleanup() {
+        return Set.of(
+                SaveCvOrchestratorJob.KEY,
+                PublishCvTaskJob.KEY,
+                PublishCvToKafkaConcurrentTasksJob.KEY
+        );
+    }
+
     @Bean
     public JobDetail[] jobDetails() {
         return new JobDetail[] {
-                jobDetail(SaveCvOrchestratorJob.class, SaveCvOrchestratorJob.KEY),
                 jobDetail(StoreCvTaskJob.class, StoreCvTaskJob.KEY),
                 jobDetail(PublishCvToClientTaskJob.class, PublishCvToClientTaskJob.KEY),
                 jobDetail(PublishCvToKafkaTaskJob.class, PublishCvToKafkaTaskJob.KEY),

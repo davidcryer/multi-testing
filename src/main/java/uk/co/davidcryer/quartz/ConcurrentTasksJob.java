@@ -51,6 +51,7 @@ public abstract class ConcurrentTasksJob extends AbstractTaskJob {
         jobProps.put(lastJob, task.getSuccessfulJobCondition().test(props));
         task.getReturnPropsWriter().accept(jobProps);
         if (areAllTasksComplete(context, tasks)) {
+            markFinished(jobProps);
             triggerNextJob(context);
         }
     }
@@ -61,6 +62,10 @@ public abstract class ConcurrentTasksJob extends AbstractTaskJob {
         return tasks.stream()
                 .map(Task::getKey)
                 .allMatch(predicate);
+    }
+
+    private void markFinished(JobDataMap props) {
+        props.put("isFinished", true);
     }
 
     protected abstract List<Task> getTasks();

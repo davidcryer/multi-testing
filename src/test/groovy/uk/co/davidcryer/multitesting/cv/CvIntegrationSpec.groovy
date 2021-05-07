@@ -18,6 +18,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
 import static groovy.json.JsonOutput.prettyPrint
 import static org.springframework.http.HttpStatus.ACCEPTED
+import static org.springframework.http.HttpStatus.CONFLICT
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class CvIntegrationSpec extends Specification {
@@ -42,6 +43,10 @@ class CvIntegrationSpec extends Specification {
                     .topicClass(CvMessage)
                     .build()
         }
+    }
+
+    def setup() {
+        kafkaHelper.clear()
     }
 
     def "posting cv should be stored in database, published to kafka and external client, and updated with publish status"() {
@@ -69,7 +74,7 @@ class CvIntegrationSpec extends Specification {
         and: "assert database entry"
         def kafkaMessage = kafkaHelper.get(1, 2000).get(0)
         Thread.sleep 500
-        def cv = dbOps.get(kafkaMessage.id)
+        def cv = dbOps.get kafkaMessage.id
 
         verifyAll(cv) {
             id == UUID.fromString(id).toString()
@@ -112,6 +117,29 @@ class CvIntegrationSpec extends Specification {
         kafkaHelper.clear()
         dbOps.deleteAll()
         cvClient.stop()
+    }
+
+    def "More than one CV with same email address cannot be processed at same time"() {
+        given:
+        def request = objectMapper.readValue"""
+{
+    "emailAddress": "test-email"
+}
+""", CvRequest
+
+        when:
+        def firstResponse = template.postForEntity"/cvs", Requests.post(request), String
+        def secondResponse = template.postForEntity"/cvs", Requests.post(request), String
+
+        then:
+        verifyAll {
+            firstResponse.statusCode == ACCEPTED
+            secondResponse.statusCode == CONFLICT
+        }
+
+        cleanup:
+        kafkaHelper.get 1, 2000
+        dbOps.deleteAll()
     }
 
     private def json(Object o) {//json friendly

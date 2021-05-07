@@ -61,6 +61,10 @@ public abstract class OrchestratorJob implements Job {
         scheduler.triggerJob(jobKey);
     }
 
+    protected void markFinished(JobExecutionContext context, JobDataMap props) {
+        context.getJobDetail().getJobDataMap().put("isFinished", true);
+    }
+
     public interface Workflow {
         void execute(JobExecutionContext context, JobDataMap props) throws SchedulerException;
     }
