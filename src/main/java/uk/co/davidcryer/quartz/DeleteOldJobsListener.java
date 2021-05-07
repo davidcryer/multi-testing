@@ -25,8 +25,12 @@ public class DeleteOldJobsListener extends JobListenerSupport {
     public void jobWasExecuted(JobExecutionContext context, JobExecutionException jobException) {
         try {
             if (shouldDeleteJob(context)) {
-                log.info("Deleting job {}", context.getJobDetail().getKey());
-                scheduler.deleteJob(context.getJobDetail().getKey());
+                var jobKey = context.getJobDetail().getKey();
+                log.info("Deleting job {}", jobKey);
+                var didDelete = scheduler.deleteJob(jobKey);
+                if (!didDelete) {
+                    log.error("Failed to delete job {}", jobKey);
+                }
             }
         } catch (SchedulerException e) {
             e.printStackTrace();
