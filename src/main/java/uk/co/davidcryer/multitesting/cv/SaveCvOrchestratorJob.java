@@ -21,6 +21,9 @@ public class SaveCvOrchestratorJob extends OrchestratorJob {
 
     @Override
     protected Map<String, Workflow> getWorkflowMap() {
+        //TODO refactor to look more like concurrent tasks job - a list of tasks to be executed
+        // However, the order of the tasks would determine the order of the workflow
+        // When getting the callback from the last job, can find the index of the last job by its key and then execute the next task along
         return Map.of(
                 "", this.triggerStoreCvJob,
                 StoreCvTaskJob.KEY, this.triggerPublishJobs,
