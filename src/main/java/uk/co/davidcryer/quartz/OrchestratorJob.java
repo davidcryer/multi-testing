@@ -8,14 +8,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.Map;
 import java.util.UUID;
 
-import static uk.co.davidcryer.quartz.AbstractTaskJob.PROPS_JOB_LAST;
-import static uk.co.davidcryer.quartz.AbstractTaskJob.PROPS_JOB_NEXT;
+import static uk.co.davidcryer.quartz.AbstractTaskJob.*;
 
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @Slf4j
 public abstract class OrchestratorJob implements Job {
     private final Scheduler scheduler;
-    private final String key;
 
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
@@ -39,16 +37,24 @@ public abstract class OrchestratorJob implements Job {
 
     protected abstract Map<String, Workflow> getWorkflowMap();
 
-    protected void triggerJob(String name, JobDataMap props, boolean setNextJob) throws SchedulerException {
+    protected void triggerJob(JobExecutionContext context, String name, JobDataMap props, boolean setNextJob) throws SchedulerException {
         if (setNextJob) {
-            props.put(PROPS_JOB_NEXT, key);
+            var jobKey = context.getJobDetail().getKey();
+            props.put(PROPS_JOB_NEXT_NAME, jobKey.getName());
+            if (jobKey.getGroup() != null) {
+                props.put(PROPS_JOB_NEXT_GROUP, jobKey.getGroup());
+            }
         }
         scheduler.triggerJob(JobKey.jobKey(name), props);
     }
 
-    protected void triggerConcurrentJob(Class<? extends Job> clazz, String name, JobDataMap props, boolean setNextJob) throws SchedulerException {
+    protected void triggerConcurrentJob(JobExecutionContext context, Class<? extends Job> clazz, String name, JobDataMap props, boolean setNextJob) throws SchedulerException {
         if (setNextJob) {
-            props.put(PROPS_JOB_NEXT, key);
+            var jobKey = context.getJobDetail().getKey();
+            props.put(PROPS_JOB_NEXT_NAME, jobKey.getName());
+            if (jobKey.getGroup() != null) {
+                props.put(PROPS_JOB_NEXT_GROUP, jobKey.getGroup());
+            }
         }
         name = name + "-" + UUID.randomUUID();
         scheduler.addJob(JobBuilder.newJob(clazz).withIdentity(name).storeDurably().usingJobData(props).build(), false);

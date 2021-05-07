@@ -16,7 +16,7 @@ public class SaveCvOrchestratorJob extends OrchestratorJob {
     public static final String KEY = "save-cv-orchestrator";
 
     public SaveCvOrchestratorJob(Scheduler scheduler) {
-        super(scheduler, KEY);
+        super(scheduler);
     }
 
     @Override
@@ -31,17 +31,17 @@ public class SaveCvOrchestratorJob extends OrchestratorJob {
     private final Workflow triggerStoreCvJob = (context, props) -> {
         var cv = props.getString("cv");
         var storeCvProps= StoreCvTaskJob.props(cv);
-        triggerJob(StoreCvTaskJob.KEY, storeCvProps, true);
+        triggerJob(context, StoreCvTaskJob.KEY, storeCvProps, true);
     };
 
     private final Workflow triggerPublishJobs = (context, props) -> {
         var publishCvProps = StoreCvTaskJob.mapReturnProps(props, PublishCvTaskJob::props);
-        triggerConcurrentJob(PublishCvTaskJob.class, PublishCvTaskJob.KEY, publishCvProps, true);
+        triggerConcurrentJob(context, PublishCvTaskJob.class, PublishCvTaskJob.KEY, publishCvProps, true);
     };
 
     private final Workflow triggerUpdateCvWithPublishStatusJob = (context, props) -> {
         var updateCvWithPublishProps = PublishCvTaskJob.mapReturnProps(props, UpdateCvWithPublishStatusTaskJob::props);
-        triggerJob(UpdateCvWithPublishStatusTaskJob.KEY, updateCvWithPublishProps, false);
+        triggerJob(context, UpdateCvWithPublishStatusTaskJob.KEY, updateCvWithPublishProps, false);
     };
 
     public static JobDataMap props(String request) {

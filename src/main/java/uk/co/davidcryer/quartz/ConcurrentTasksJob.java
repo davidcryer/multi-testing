@@ -90,7 +90,11 @@ public abstract class ConcurrentTasksJob extends AbstractTaskJob {
 
         protected void triggerJob(JobExecutionContext context, JobDataMap props, Scheduler scheduler) throws SchedulerException {
             var triggerProps = propsMapper.apply(props);
-            triggerProps.put(PROPS_JOB_NEXT, context.getJobDetail().getKey().getName());
+            var thisJobKey = context.getJobDetail().getKey();
+            triggerProps.put(PROPS_JOB_NEXT_NAME, thisJobKey.getName());
+            if (thisJobKey.getGroup() != null) {
+                triggerProps.put(PROPS_JOB_NEXT_GROUP, thisJobKey.getGroup());
+            }
             scheduler.triggerJob(JobKey.jobKey(key), triggerProps);
         }
     }
@@ -123,7 +127,11 @@ public abstract class ConcurrentTasksJob extends AbstractTaskJob {
         @Override
         protected void triggerJob(JobExecutionContext context, JobDataMap props, Scheduler scheduler) throws SchedulerException {
             var jobProps = getPropsMapper().apply(props);
-            jobProps.put(PROPS_JOB_NEXT, context.getJobDetail().getKey().getName());
+            var thisJobKey = context.getJobDetail().getKey();
+            jobProps.put(PROPS_JOB_NEXT_NAME, thisJobKey.getName());
+            if (thisJobKey.getGroup() != null) {
+                jobProps.put(PROPS_JOB_NEXT_GROUP, thisJobKey.getGroup());
+            }
             var name = getKey() + "-" + UUID.randomUUID();
             scheduler.addJob(JobBuilder.newJob(concurrentJobClass).withIdentity(name).storeDurably().usingJobData(jobProps).build(), false);
             scheduler.triggerJob(JobKey.jobKey(name));
