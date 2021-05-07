@@ -24,9 +24,10 @@ public class QuartzConfig {
     public SchedulerFactoryBean quartzScheduler(ApplicationContext applicationContext,
                                                 JobDetail[] jobDetails,
                                                 JobListener[] jobListeners) {
-        SchedulerFactoryBean schedulerFactoryBean = new SchedulerFactoryBean();
         SpringBeanJobFactory jobFactory = new SpringBeanJobFactory();
         jobFactory.setApplicationContext(applicationContext);
+
+        SchedulerFactoryBean schedulerFactoryBean = new SchedulerFactoryBean();
         schedulerFactoryBean.setJobFactory(jobFactory);
         schedulerFactoryBean.setAutoStartup(true);
         schedulerFactoryBean.setOverwriteExistingJobs(false);
