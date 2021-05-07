@@ -21,7 +21,7 @@ public class StoreCvTaskJob extends TaskJob {
 
     @Autowired
     public StoreCvTaskJob(Scheduler scheduler, StoreCvTaskService service, ObjectMapper objectMapper) {
-        super(scheduler, KEY);
+        super(scheduler);
         this.service = service;
         this.objectMapper = objectMapper;
     }

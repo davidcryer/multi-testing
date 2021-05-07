@@ -16,7 +16,7 @@ public class PublishCvTaskJob extends ConcurrentTasksJob {
 
     @Autowired
     public PublishCvTaskJob(Scheduler scheduler) {
-        super(scheduler, KEY);
+        super(scheduler);
     }
 
     @Override

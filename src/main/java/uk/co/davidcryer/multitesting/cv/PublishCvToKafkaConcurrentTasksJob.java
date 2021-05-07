@@ -16,7 +16,7 @@ public class PublishCvToKafkaConcurrentTasksJob extends ConcurrentTasksJob {
     public static final String KEY = "publish-to-kafka-tasks";
 
     public PublishCvToKafkaConcurrentTasksJob(Scheduler scheduler) {
-        super(scheduler, KEY);
+        super(scheduler);
     }
 
     @Override

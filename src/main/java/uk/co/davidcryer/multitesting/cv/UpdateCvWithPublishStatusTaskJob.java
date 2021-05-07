@@ -12,7 +12,7 @@ public class UpdateCvWithPublishStatusTaskJob extends TaskJob {
     private final UpdateCvWithPublishStatusTaskService service;
 
     public UpdateCvWithPublishStatusTaskJob(Scheduler scheduler, UpdateCvWithPublishStatusTaskService service) {
-        super(scheduler, KEY);
+        super(scheduler);
         this.service = service;
     }
 

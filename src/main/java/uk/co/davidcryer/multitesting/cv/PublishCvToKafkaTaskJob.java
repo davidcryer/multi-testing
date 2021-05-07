@@ -14,7 +14,7 @@ public class PublishCvToKafkaTaskJob extends TaskJob {
 
     @Autowired
     public PublishCvToKafkaTaskJob(Scheduler scheduler, PublishCvToKafkaTaskService service) {
-        super(scheduler, KEY);
+        super(scheduler);
         this.service = service;
     }
 

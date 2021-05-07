@@ -15,8 +15,8 @@ import java.util.function.Predicate;
 @PersistJobDataAfterExecution
 public abstract class ConcurrentTasksJob extends AbstractTaskJob {
 
-    public ConcurrentTasksJob(Scheduler scheduler, String key) {
-        super(scheduler, key);
+    public ConcurrentTasksJob(Scheduler scheduler) {
+        super(scheduler);
     }
 
     @Override
@@ -24,7 +24,7 @@ public abstract class ConcurrentTasksJob extends AbstractTaskJob {
         var props = context.getMergedJobDataMap();
         try {
             var lastJob = props.containsKey(PROPS_JOB_LAST) ? props.getString(PROPS_JOB_LAST) : "";
-            log.info("{} executing concurrent tasks job with last job {}", key, lastJob);
+            log.info("{} executing concurrent tasks job with last job {}", getJobName(context), lastJob);
             if (lastJob.equals("")) {
                 triggerJobs(context, props);
             } else {
@@ -47,7 +47,7 @@ public abstract class ConcurrentTasksJob extends AbstractTaskJob {
         var task = tasks.stream()
                 .filter(t -> t.getKey().equals(lastJob))
                 .findFirst()
-                .orElseThrow(() -> new JobExecutionException(key + " does not have task for last job " + lastJob));
+                .orElseThrow(() -> new JobExecutionException(getJobName(context) + " does not have task for last job " + lastJob));
         jobProps.put(lastJob, task.getSuccessfulJobCondition().test(props));
         task.getReturnPropsWriter().accept(jobProps);
         if (areAllTasksComplete(context, tasks)) {
@@ -132,9 +132,10 @@ public abstract class ConcurrentTasksJob extends AbstractTaskJob {
             if (thisJobKey.getGroup() != null) {
                 jobProps.put(PROPS_JOB_NEXT_GROUP, thisJobKey.getGroup());
             }
-            var name = getKey() + "-" + UUID.randomUUID();
-            scheduler.addJob(JobBuilder.newJob(concurrentJobClass).withIdentity(name).storeDurably().usingJobData(jobProps).build(), false);
-            scheduler.triggerJob(JobKey.jobKey(name));
+            var name = getKey();
+            var jobKey = JobKey.jobKey(name, UUID.randomUUID().toString());
+            scheduler.addJob(JobBuilder.newJob(concurrentJobClass).withIdentity(jobKey).storeDurably().usingJobData(jobProps).build(), false);
+            scheduler.triggerJob(jobKey);
         }
     }
 }

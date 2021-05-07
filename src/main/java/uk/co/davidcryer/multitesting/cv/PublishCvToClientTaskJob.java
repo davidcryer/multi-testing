@@ -15,7 +15,7 @@ public class PublishCvToClientTaskJob extends TaskJob {
 
     @Autowired
     public PublishCvToClientTaskJob(Scheduler scheduler, PublishCvToClientTaskService service) {
-        super(scheduler, KEY);
+        super(scheduler);
         this.service = service;
     }
 

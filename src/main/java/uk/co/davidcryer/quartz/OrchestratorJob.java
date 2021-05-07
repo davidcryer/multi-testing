@@ -50,15 +50,15 @@ public abstract class OrchestratorJob implements Job {
 
     protected void triggerConcurrentJob(JobExecutionContext context, Class<? extends Job> clazz, String name, JobDataMap props, boolean setNextJob) throws SchedulerException {
         if (setNextJob) {
-            var jobKey = context.getJobDetail().getKey();
-            props.put(PROPS_JOB_NEXT_NAME, jobKey.getName());
-            if (jobKey.getGroup() != null) {
-                props.put(PROPS_JOB_NEXT_GROUP, jobKey.getGroup());
+            var thisJobKey = context.getJobDetail().getKey();
+            props.put(PROPS_JOB_NEXT_NAME, thisJobKey.getName());
+            if (thisJobKey.getGroup() != null) {
+                props.put(PROPS_JOB_NEXT_GROUP, thisJobKey.getGroup());
             }
         }
-        name = name + "-" + UUID.randomUUID();
-        scheduler.addJob(JobBuilder.newJob(clazz).withIdentity(name).storeDurably().usingJobData(props).build(), false);
-        scheduler.triggerJob(JobKey.jobKey(name));
+        var jobKey = JobKey.jobKey(name, UUID.randomUUID().toString());
+        scheduler.addJob(JobBuilder.newJob(clazz).withIdentity(jobKey).storeDurably().usingJobData(props).build(), false);
+        scheduler.triggerJob(jobKey);
     }
 
     public interface Workflow {

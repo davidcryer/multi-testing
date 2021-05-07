@@ -9,14 +9,13 @@ public abstract class AbstractTaskJob implements Job {
     static final String PROPS_JOB_NEXT_NAME = "job.next.name";
     static final String PROPS_JOB_NEXT_GROUP = "job.next.group";
     final Scheduler scheduler;
-    final String key;
 
     protected void triggerNextJob(JobExecutionContext context) throws JobExecutionException {
         try {
             var props = context.getMergedJobDataMap();
             if (props.containsKey(PROPS_JOB_NEXT_NAME)) {
                 var nextProps = new JobDataMap();
-                nextProps.put(PROPS_JOB_LAST, key);
+                nextProps.put(PROPS_JOB_LAST, context.getJobDetail().getKey().getName());
                 writeToReturnProps(context, nextProps);
                 var nextJobKey = getNextJobKey(props);
                 scheduler.triggerJob(nextJobKey, nextProps);
@@ -33,6 +32,10 @@ public abstract class AbstractTaskJob implements Job {
             return JobKey.jobKey(name, group);
         }
         return JobKey.jobKey(name);
+    }
+
+    protected String getJobName(JobExecutionContext context) {
+        return context.getJobDetail().getKey().getName();
     }
 
     protected void writeToReturnProps(JobExecutionContext context, JobDataMap props) {

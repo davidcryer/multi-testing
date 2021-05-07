@@ -13,7 +13,7 @@ public class NoOpJob extends TaskJob {
 
     @Autowired
     public NoOpJob(Scheduler scheduler) {
-        super(scheduler, KEY);
+        super(scheduler);
     }
 
     @Override
