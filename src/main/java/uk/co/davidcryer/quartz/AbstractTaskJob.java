@@ -34,10 +34,6 @@ public abstract class AbstractTaskJob implements Job {
         return JobKey.jobKey(name);
     }
 
-    protected String getJobName(JobExecutionContext context) {
-        return context.getJobDetail().getKey().getName();
-    }
-
     protected void writeToReturnProps(JobExecutionContext context, JobDataMap props) {
 
     }

@@ -5,6 +5,8 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.quartz.Scheduler;
 
+import static uk.co.davidcryer.quartz.JobExecutionContextUtils.getJobName;
+
 @Slf4j
 public abstract class TaskJob extends AbstractTaskJob {
 

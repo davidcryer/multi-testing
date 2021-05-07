@@ -10,6 +10,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import static uk.co.davidcryer.quartz.JobExecutionContextUtils.getJobName;
+
 @Slf4j
 @DisallowConcurrentExecution
 @PersistJobDataAfterExecution
