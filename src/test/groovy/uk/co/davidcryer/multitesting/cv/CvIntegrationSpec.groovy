@@ -123,7 +123,7 @@ class CvIntegrationSpec extends Specification {
         given:
         def request = objectMapper.readValue"""
 {
-    "emailAddress": "test-email"
+    "emailAddress": "test-email-2"
 }
 """, CvRequest
 
