@@ -1,4 +1,4 @@
-package uk.co.davidcryer.multitesting.cv;
+package uk.co.davidcryer.quartz;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +14,7 @@ import java.util.Set;
 @Slf4j
 public class DeleteOldJobsListener extends JobListenerSupport {
     private final Scheduler scheduler;
-    private final Set<String> jobsRequiringCleanup;
+    private final Set<String> jobsRequiringDeletion;
 
     @Override
     public String getName() {
@@ -36,7 +36,7 @@ public class DeleteOldJobsListener extends JobListenerSupport {
     private boolean shouldDeleteJob(JobExecutionContext context) {
         var jobName = context.getJobDetail().getKey().getName();
         var jobProps = context.getJobDetail().getJobDataMap();
-        return jobsRequiringCleanup.contains(jobName)
+        return jobsRequiringDeletion.contains(jobName)
                 && jobProps.containsKey("isFinished")
                 && jobProps.getBoolean("isFinished");
     }

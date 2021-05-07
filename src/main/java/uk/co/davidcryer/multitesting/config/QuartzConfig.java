@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 import org.springframework.scheduling.quartz.SpringBeanJobFactory;
 import uk.co.davidcryer.multitesting.cv.*;
+import uk.co.davidcryer.quartz.DeleteOldJobsListener;
 import uk.co.davidcryer.quartz.WaitForJobsOnShutdownConfig;
 import uk.co.davidcryer.quartz.WaitForJobsOnShutdownJobListener;
 
@@ -37,14 +38,14 @@ public class QuartzConfig {
 
     @SneakyThrows
     @Bean
-    public Scheduler scheduler(SchedulerFactoryBean schedulerFactoryBean, Set<String> jobsRequiringCleanup) {
+    public Scheduler scheduler(SchedulerFactoryBean schedulerFactoryBean, Set<String> jobsRequiringDeletion) {
         var scheduler = schedulerFactoryBean.getScheduler();
-        scheduler.getListenerManager().addJobListener(new DeleteOldJobsListener(scheduler, jobsRequiringCleanup));
+        scheduler.getListenerManager().addJobListener(new DeleteOldJobsListener(scheduler, jobsRequiringDeletion));
         return scheduler;
     }
 
     @Bean
-    public Set<String> jobsRequiringCleanup() {
+    public Set<String> jobsRequiringDeletion() {
         return Set.of(
                 SaveCvOrchestratorJob.KEY,
                 PublishCvTaskJob.KEY,
