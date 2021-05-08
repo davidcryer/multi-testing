@@ -10,6 +10,8 @@ import uk.co.davidcryer.quartz.TaskBatchJob;
 
 import java.util.List;
 
+import static uk.co.davidcryer.quartz.TaskUtils.mapProps;
+
 @Component
 @DisallowConcurrentExecution
 @PersistJobDataAfterExecution
@@ -23,14 +25,9 @@ public class PublishCvToKafkaTaskBatchJob extends TaskBatchJob {
     @Override
     protected List<Task> getTasks() {
         return List.of(
-                new Task(PublishCvToKafkaTaskJob.KEY, PublishCvToKafkaTaskBatchJob::mapToPublishCvToKafkaProps),
+                new Task(PublishCvToKafkaTaskJob.KEY, mapProps(PublishCvToKafkaTaskJob::props, "cvId")),
                 new Task(NoOpJob.KEY, JobDataMap::new)
         );
-    }
-
-    private static JobDataMap mapToPublishCvToKafkaProps(JobDataMap props) {
-        var cvId = props.getString("cvId");
-        return PublishCvToKafkaTaskJob.props(cvId);
     }
 
     public static JobDataMap props(String cvId) {

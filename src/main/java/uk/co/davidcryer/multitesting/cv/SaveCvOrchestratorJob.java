@@ -10,6 +10,8 @@ import uk.co.davidcryer.quartz.Task;
 
 import java.util.List;
 
+import static uk.co.davidcryer.quartz.TaskUtils.mapProps;
+
 @Component
 @PersistJobDataAfterExecution
 @DisallowConcurrentExecution
@@ -23,23 +25,10 @@ public class SaveCvOrchestratorJob extends OrchestratorJob {
     @Override
     protected List<Task> getTasks() {
         return List.of(
-                new Task(StoreCvTaskJob.KEY, SaveCvOrchestratorJob::mapToStoreCvProps),
-                new Task.Batch(PublishCvTaskJob.KEY, SaveCvOrchestratorJob::mapToPublishCvProps, PublishCvTaskJob.class),
-                new Task(UpdateCvWithPublishStatusTaskJob.KEY, SaveCvOrchestratorJob::mapToUpdateCvWithPublishStatusProps)
+                new Task(StoreCvTaskJob.KEY, mapProps(StoreCvTaskJob::props, "cv")),
+                new Task.Batch(PublishCvTaskJob.KEY, StoreCvTaskJob.returnPropsMapper(PublishCvTaskJob::props), PublishCvTaskJob.class),
+                new Task(UpdateCvWithPublishStatusTaskJob.KEY, PublishCvTaskJob.returnPropsMapper(UpdateCvWithPublishStatusTaskJob::props))
         );
-    }
-
-    private static JobDataMap mapToStoreCvProps(JobDataMap props) {
-        var cv = props.getString("cv");
-        return StoreCvTaskJob.props(cv);
-    }
-
-    private static JobDataMap mapToPublishCvProps(JobDataMap props) {
-        return StoreCvTaskJob.mapReturnProps(props, PublishCvTaskJob::props);
-    }
-
-    private static JobDataMap mapToUpdateCvWithPublishStatusProps(JobDataMap props) {
-        return PublishCvTaskJob.mapReturnProps(props, UpdateCvWithPublishStatusTaskJob::props);
     }
 
     public static JobDataMap props(String request) {

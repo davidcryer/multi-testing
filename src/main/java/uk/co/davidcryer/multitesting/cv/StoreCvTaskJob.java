@@ -12,6 +12,8 @@ import uk.co.davidcryer.quartz.TaskJob;
 
 import java.util.function.Function;
 
+import static uk.co.davidcryer.quartz.TaskUtils.mapProps;
+
 @Component
 public class StoreCvTaskJob extends TaskJob {
     public static final String KEY = "store-cv";
@@ -48,8 +50,7 @@ public class StoreCvTaskJob extends TaskJob {
         return props;
     }
 
-    public static JobDataMap mapReturnProps(JobDataMap props, Function<String, JobDataMap> map) {
-        var cvId = props.getString("cvId");
-        return map.apply(cvId);
+    public static Function<JobDataMap, JobDataMap> returnPropsMapper(Function<String, JobDataMap> map) {
+        return mapProps(map, "cv");
     }
 }
