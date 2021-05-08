@@ -16,14 +16,16 @@ public class ConcurrentTasks extends Task {
     public ConcurrentTasks(String key,
                           Function<JobDataMap, JobDataMap> propsMapper,
                           Class<? extends Job> concurrentJobClass) {
-        this(key, propsMapper, IMPLIED_SUCCESS_PREDICATE, concurrentJobClass);
+        super(key, propsMapper);
+        this.concurrentJobClass = concurrentJobClass;
     }
 
     public ConcurrentTasks(String key,
                           Function<JobDataMap, JobDataMap> propsMapper,
                           Predicate<JobDataMap> successfulJobCondition,
                           Class<? extends Job> concurrentJobClass) {
-        this(key, propsMapper, successfulJobCondition, NO_OP_CONSUMER, concurrentJobClass);
+        super(key, propsMapper, successfulJobCondition);
+        this.concurrentJobClass = concurrentJobClass;
     }
 
     public ConcurrentTasks(String key,

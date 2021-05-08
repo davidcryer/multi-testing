@@ -21,6 +21,10 @@ public class Task {
         this(key, propsMapper, IMPLIED_SUCCESS_PREDICATE, NO_OP_CONSUMER);
     }
 
+    public Task(String key, Function<JobDataMap, JobDataMap> propsMapper, Predicate<JobDataMap> successfulJobCondition) {
+        this(key, propsMapper, successfulJobCondition, NO_OP_CONSUMER);
+    }
+
     public Task(String key,
                 Function<JobDataMap, JobDataMap> propsMapper,
                 Predicate<JobDataMap> successfulJobCondition,

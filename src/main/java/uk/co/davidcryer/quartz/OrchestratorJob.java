@@ -5,10 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.quartz.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.Map;
-import java.util.UUID;
+import java.util.List;
 
-import static uk.co.davidcryer.quartz.AbstractTaskJob.*;
+import static uk.co.davidcryer.quartz.AbstractTaskJob.PROPS_JOB_LAST;
 
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @Slf4j
@@ -19,49 +18,41 @@ public abstract class OrchestratorJob implements Job, MarkableAsFinished {
     public void execute(JobExecutionContext context) throws JobExecutionException {
         var props = context.getMergedJobDataMap();
         try {
-            getWorkflow(props).execute(context, props);
+            handle(context, props);
         } catch (SchedulerException e) {
             throw new JobExecutionException(e);
         }
     }
 
-    private Workflow getWorkflow(JobDataMap props) throws JobExecutionException {
-        var lastJob = props.containsKey(PROPS_JOB_LAST) ? props.getString(PROPS_JOB_LAST) : "";
-        log.info("executing orchestrator with last job {}", lastJob);
-        var workflow = getWorkflowMap().get(lastJob);
-        if (workflow != null) {
-            return workflow;
-        }
-        throw new JobExecutionException("Workflow does not exist for last job " + lastJob);
-    }
-
-    protected abstract Map<String, Workflow> getWorkflowMap();
-
-    protected void triggerJob(JobExecutionContext context, String name, JobDataMap props, boolean setNextJob) throws SchedulerException {
-        if (setNextJob) {
-            var jobKey = context.getJobDetail().getKey();
-            props.put(PROPS_JOB_NEXT_NAME, jobKey.getName());
-            if (jobKey.getGroup() != null) {
-                props.put(PROPS_JOB_NEXT_GROUP, jobKey.getGroup());
+    private void handle(JobExecutionContext context, JobDataMap props) throws SchedulerException {
+        Task nextTask = null;
+        var tasks = getTasks();
+        if (props.containsKey(PROPS_JOB_LAST)) {
+            var lastJobKey = props.getString(PROPS_JOB_LAST);
+            log.info("executing orchestrator with last job {}", lastJobKey);
+            Task lastTask = null;
+            for (int i = 0; i < tasks.size(); i++) {
+                var task = tasks.get(i);
+                if (task.key.equals(lastJobKey)) {
+                    lastTask = task;
+                    if (i < tasks.size() - 1) {
+                        nextTask = tasks.get(i + 1);
+                    }
+                }
             }
-        }
-        scheduler.triggerJob(JobKey.jobKey(name), props);
-    }
-
-    protected void triggerConcurrentJob(JobExecutionContext context, Class<? extends Job> clazz, String name, JobDataMap props, boolean setNextJob) throws SchedulerException {
-        if (setNextJob) {
-            var thisJobKey = context.getJobDetail().getKey();
-            props.put(PROPS_JOB_NEXT_NAME, thisJobKey.getName());
-            if (thisJobKey.getGroup() != null) {
-                props.put(PROPS_JOB_NEXT_GROUP, thisJobKey.getGroup());
+            if (lastTask == null) {
+                throw new JobExecutionException("Task does not exist for last job key " + lastJobKey);
             }
+            if (nextTask == null) {
+                markAsFinished(context, props);
+                return;
+            }
+        } else {
+            log.info("executing orchestrator for first job");
+            nextTask = getTasks().get(0);
         }
-        var jobKey = JobKey.jobKey(name, UUID.randomUUID().toString());
-        scheduler.addJob(JobBuilder.newJob(clazz).withIdentity(jobKey).storeDurably().usingJobData(props).build(), false);
-        scheduler.triggerJob(jobKey);
+        nextTask.triggerJob(context, props, scheduler);
     }
 
-    public interface Workflow {
-        void execute(JobExecutionContext context, JobDataMap props) throws SchedulerException;
-    }
+    protected abstract List<Task> getTasks();
 }

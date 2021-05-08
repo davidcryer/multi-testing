@@ -5,9 +5,11 @@ import org.quartz.JobDataMap;
 import org.quartz.PersistJobDataAfterExecution;
 import org.quartz.Scheduler;
 import org.springframework.stereotype.Component;
+import uk.co.davidcryer.quartz.ConcurrentTasks;
 import uk.co.davidcryer.quartz.OrchestratorJob;
+import uk.co.davidcryer.quartz.Task;
 
-import java.util.Map;
+import java.util.List;
 
 @Component
 @PersistJobDataAfterExecution
@@ -20,33 +22,26 @@ public class SaveCvOrchestratorJob extends OrchestratorJob {
     }
 
     @Override
-    protected Map<String, Workflow> getWorkflowMap() {
-        //TODO refactor to look more like concurrent tasks job - a list of tasks to be executed
-        // However, the order of the tasks would determine the order of the workflow
-        // When getting the callback from the last job, can find the index of the last job by its key and then execute the next task along
-        return Map.of(
-                "", this.triggerStoreCvJob,
-                StoreCvTaskJob.KEY, this.triggerPublishJobs,
-                PublishCvTaskJob.KEY, this.triggerUpdateCvWithPublishStatusJob,
-                UpdateCvWithPublishStatusTaskJob.KEY, this::markAsFinished
+    protected List<Task> getTasks() {
+        return List.of(
+                new Task(StoreCvTaskJob.KEY, SaveCvOrchestratorJob::mapToStoreCvProps),
+                new ConcurrentTasks(PublishCvTaskJob.KEY, SaveCvOrchestratorJob::mapToPublishCvProps, PublishCvTaskJob.class),
+                new Task(UpdateCvWithPublishStatusTaskJob.KEY, SaveCvOrchestratorJob::mapToUpdateCvWithPublishStatusProps)
         );
     }
 
-    private final Workflow triggerStoreCvJob = (context, props) -> {
+    private static JobDataMap mapToStoreCvProps(JobDataMap props) {
         var cv = props.getString("cv");
-        var storeCvProps= StoreCvTaskJob.props(cv);
-        triggerJob(context, StoreCvTaskJob.KEY, storeCvProps, true);
-    };
+        return StoreCvTaskJob.props(cv);
+    }
 
-    private final Workflow triggerPublishJobs = (context, props) -> {
-        var publishCvProps = StoreCvTaskJob.mapReturnProps(props, PublishCvTaskJob::props);
-        triggerConcurrentJob(context, PublishCvTaskJob.class, PublishCvTaskJob.KEY, publishCvProps, true);
-    };
+    private static JobDataMap mapToPublishCvProps(JobDataMap props) {
+        return StoreCvTaskJob.mapReturnProps(props, PublishCvTaskJob::props);
+    }
 
-    private final Workflow triggerUpdateCvWithPublishStatusJob = (context, props) -> {
-        var updateCvWithPublishProps = PublishCvTaskJob.mapReturnProps(props, UpdateCvWithPublishStatusTaskJob::props);
-        triggerJob(context, UpdateCvWithPublishStatusTaskJob.KEY, updateCvWithPublishProps, true);
-    };
+    private static JobDataMap mapToUpdateCvWithPublishStatusProps(JobDataMap props) {
+        return PublishCvTaskJob.mapReturnProps(props, UpdateCvWithPublishStatusTaskJob::props);
+    }
 
     public static JobDataMap props(String request) {
         var props = new JobDataMap();
