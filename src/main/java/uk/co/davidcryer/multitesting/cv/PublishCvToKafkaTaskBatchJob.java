@@ -5,25 +5,25 @@ import org.quartz.JobDataMap;
 import org.quartz.PersistJobDataAfterExecution;
 import org.quartz.Scheduler;
 import org.springframework.stereotype.Component;
-import uk.co.davidcryer.quartz.ConcurrentTasksJob;
 import uk.co.davidcryer.quartz.Task;
+import uk.co.davidcryer.quartz.TaskBatchJob;
 
 import java.util.List;
 
 @Component
 @DisallowConcurrentExecution
 @PersistJobDataAfterExecution
-public class PublishCvToKafkaConcurrentTasksJob extends ConcurrentTasksJob {
+public class PublishCvToKafkaTaskBatchJob extends TaskBatchJob {
     public static final String KEY = "publish-to-kafka-tasks";
 
-    public PublishCvToKafkaConcurrentTasksJob(Scheduler scheduler) {
+    public PublishCvToKafkaTaskBatchJob(Scheduler scheduler) {
         super(scheduler);
     }
 
     @Override
     protected List<Task> getTasks() {
         return List.of(
-                new Task(PublishCvToKafkaTaskJob.KEY, PublishCvToKafkaConcurrentTasksJob::mapToPublishCvToKafkaProps),
+                new Task(PublishCvToKafkaTaskJob.KEY, PublishCvToKafkaTaskBatchJob::mapToPublishCvToKafkaProps),
                 new Task(NoOpJob.KEY, JobDataMap::new)
         );
     }

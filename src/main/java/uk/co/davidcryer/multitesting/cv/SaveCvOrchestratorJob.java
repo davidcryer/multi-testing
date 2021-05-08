@@ -5,7 +5,6 @@ import org.quartz.JobDataMap;
 import org.quartz.PersistJobDataAfterExecution;
 import org.quartz.Scheduler;
 import org.springframework.stereotype.Component;
-import uk.co.davidcryer.quartz.ConcurrentTasks;
 import uk.co.davidcryer.quartz.OrchestratorJob;
 import uk.co.davidcryer.quartz.Task;
 
@@ -25,7 +24,7 @@ public class SaveCvOrchestratorJob extends OrchestratorJob {
     protected List<Task> getTasks() {
         return List.of(
                 new Task(StoreCvTaskJob.KEY, SaveCvOrchestratorJob::mapToStoreCvProps),
-                new ConcurrentTasks(PublishCvTaskJob.KEY, SaveCvOrchestratorJob::mapToPublishCvProps, PublishCvTaskJob.class),
+                new Task.Batch(PublishCvTaskJob.KEY, SaveCvOrchestratorJob::mapToPublishCvProps, PublishCvTaskJob.class),
                 new Task(UpdateCvWithPublishStatusTaskJob.KEY, SaveCvOrchestratorJob::mapToUpdateCvWithPublishStatusProps)
         );
     }

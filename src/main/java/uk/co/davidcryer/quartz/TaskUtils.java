@@ -25,12 +25,12 @@ public class TaskUtils {
         scheduler.triggerJob(JobKey.jobKey(key), triggerProps);
     }
 
-    public static void triggerConcurrentJob(JobExecutionContext context,
-                                     JobDataMap props,
-                                     Scheduler scheduler,
-                                     String key,
-                                     Function<JobDataMap, JobDataMap> propsMapper,
-                                     Class<? extends Job> concurrentJobClass) throws SchedulerException {
+    public static void triggerBatchJob(JobExecutionContext context,
+                                       JobDataMap props,
+                                       Scheduler scheduler,
+                                       String key,
+                                       Function<JobDataMap, JobDataMap> propsMapper,
+                                       Class<? extends Job> batchJobClass) throws SchedulerException {
         var jobProps = propsMapper.apply(props);
         var thisJobKey = context.getJobDetail().getKey();
         jobProps.put(PROPS_JOB_RETURN_NAME, thisJobKey.getName());
@@ -38,7 +38,7 @@ public class TaskUtils {
             jobProps.put(PROPS_JOB_RETURN_GROUP, thisJobKey.getGroup());
         }
         var jobKey = JobKey.jobKey(key, UUID.randomUUID().toString());
-        scheduler.addJob(JobBuilder.newJob(concurrentJobClass).withIdentity(jobKey).storeDurably().usingJobData(jobProps).build(), false);
+        scheduler.addJob(JobBuilder.newJob(batchJobClass).withIdentity(jobKey).storeDurably().usingJobData(jobProps).build(), false);
         scheduler.triggerJob(jobKey);
     }
 

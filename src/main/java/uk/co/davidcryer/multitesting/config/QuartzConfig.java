@@ -50,7 +50,7 @@ public class QuartzConfig {
         return Set.of(
                 SaveCvOrchestratorJob.KEY,
                 PublishCvTaskJob.KEY,
-                PublishCvToKafkaConcurrentTasksJob.KEY
+                PublishCvToKafkaTaskBatchJob.KEY
         );
     }
 

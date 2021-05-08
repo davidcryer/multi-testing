@@ -15,7 +15,7 @@ import static uk.co.davidcryer.quartz.TaskUtils.hasLastJobKey;
 @Slf4j
 @DisallowConcurrentExecution
 @PersistJobDataAfterExecution
-public abstract class ConcurrentTasksJob implements Job, JobReturn, MarkableAsFinished {
+public abstract class TaskBatchJob implements Job, JobReturn, MarkableAsFinished {
     private final Scheduler scheduler;
 
     @Override

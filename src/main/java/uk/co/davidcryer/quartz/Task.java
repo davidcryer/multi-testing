@@ -1,10 +1,7 @@
 package uk.co.davidcryer.quartz;
 
 import lombok.Getter;
-import org.quartz.JobDataMap;
-import org.quartz.JobExecutionContext;
-import org.quartz.Scheduler;
-import org.quartz.SchedulerException;
+import org.quartz.*;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -41,15 +38,36 @@ public class Task {
         TaskUtils.triggerJob(context, props, scheduler, key, propsMapper);
     }
 
-    public String getKey() {
-        return key;
-    }
+    public static class Batch extends Task {
+        private final Class<? extends Job> batchJobClass;
 
-    public Predicate<JobDataMap> getSuccessfulJobCondition() {
-        return successfulJobCondition;
-    }
+        public Batch(String key,
+                         Function<JobDataMap, JobDataMap> propsMapper,
+                         Class<? extends Job> batchJobClass) {
+            super(key, propsMapper);
+            this.batchJobClass = batchJobClass;
+        }
 
-    public Consumer<JobDataMap> getReturnPropsWriter() {
-        return returnPropsWriter;
+        public Batch(String key,
+                         Function<JobDataMap, JobDataMap> propsMapper,
+                         Predicate<JobDataMap> successfulJobCondition,
+                         Class<? extends Job> batchJobClass) {
+            super(key, propsMapper, successfulJobCondition);
+            this.batchJobClass = batchJobClass;
+        }
+
+        public Batch(String key,
+                         Function<JobDataMap, JobDataMap> propsMapper,
+                         Predicate<JobDataMap> successfulJobCondition,
+                         Consumer<JobDataMap> returnPropsWriter,
+                         Class<? extends Job> batchJobClass) {
+            super(key, propsMapper, successfulJobCondition, returnPropsWriter);
+            this.batchJobClass = batchJobClass;
+        }
+
+        @Override
+        public void triggerJob(JobExecutionContext context, JobDataMap props, Scheduler scheduler) throws SchedulerException {
+            TaskUtils.triggerBatchJob(context, props, scheduler, getKey(), getPropsMapper(), batchJobClass);
+        }
     }
 }
