@@ -6,7 +6,7 @@ import java.util.function.Function;
 
 public class TaskUtils {
 
-    public static Function<JobDataMap, JobDataMap> mapProps(Function<String, JobDataMap> propsMapper, String propKey) {
+    public static Function<JobDataMap, JobDataMap> pass(String propKey, Function<String, JobDataMap> propsMapper) {
         return props -> propsMapper.apply(props.getString(propKey));
     }
 }

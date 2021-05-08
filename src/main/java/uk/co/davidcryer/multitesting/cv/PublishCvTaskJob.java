@@ -11,7 +11,7 @@ import uk.co.davidcryer.quartz.TaskBatchJob;
 import java.util.List;
 import java.util.function.Function;
 
-import static uk.co.davidcryer.quartz.TaskUtils.mapProps;
+import static uk.co.davidcryer.quartz.TaskUtils.pass;
 
 @Component
 public class PublishCvTaskJob extends TaskBatchJob {
@@ -25,8 +25,8 @@ public class PublishCvTaskJob extends TaskBatchJob {
     @Override
     protected List<Task> getTasks() {
         return List.of(
-                new Task(PublishCvToClientTaskJob.KEY, mapProps(PublishCvToClientTaskJob::props, "cvId")),
-                new Task.Batch(PublishCvToKafkaTaskBatchJob.KEY, mapProps(PublishCvToKafkaTaskJob::props, "cvId"), PublishCvToKafkaTaskBatchJob.class)
+                new Task(PublishCvToClientTaskJob.KEY, pass("cvId", PublishCvToClientTaskJob::props)),
+                new Task.Batch(PublishCvToKafkaTaskBatchJob.KEY, pass("cvId", PublishCvToKafkaTaskJob::props), PublishCvToKafkaTaskBatchJob.class)
         );
     }
 
@@ -37,11 +37,11 @@ public class PublishCvTaskJob extends TaskBatchJob {
     }
 
     @Override
-    public void writeToReturnProps(JobExecutionContext context, JobDataMap props) {
-        props.put("cvId", context.getJobDetail().getJobDataMap().getString("cvId"));
+    public void writeToReturnProps(JobExecutionContext context, JobDataMap returnProps) {
+        returnProps.put("cvId", context.getJobDetail().getJobDataMap().getString("cvId"));
     }
 
     public static Function<JobDataMap, JobDataMap> returnPropsMapper(Function<String, JobDataMap> map) {
-        return mapProps(map, "cvId");
+        return pass("cvId", map);
     }
 }

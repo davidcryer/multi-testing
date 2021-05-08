@@ -10,7 +10,7 @@ import uk.co.davidcryer.quartz.Task;
 
 import java.util.List;
 
-import static uk.co.davidcryer.quartz.TaskUtils.mapProps;
+import static uk.co.davidcryer.quartz.TaskUtils.pass;
 
 @Component
 @PersistJobDataAfterExecution
@@ -25,7 +25,7 @@ public class SaveCvOrchestratorJob extends OrchestratorJob {
     @Override
     protected List<Task> getTasks() {
         return List.of(
-                new Task(StoreCvTaskJob.KEY, mapProps(StoreCvTaskJob::props, "cv")),
+                new Task(StoreCvTaskJob.KEY, pass("cv", StoreCvTaskJob::props)),
                 new Task.Batch(PublishCvTaskJob.KEY, StoreCvTaskJob.returnPropsMapper(PublishCvTaskJob::props), PublishCvTaskJob.class),
                 new Task(UpdateCvWithPublishStatusTaskJob.KEY, PublishCvTaskJob.returnPropsMapper(UpdateCvWithPublishStatusTaskJob::props))
         );

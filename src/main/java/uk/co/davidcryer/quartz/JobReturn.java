@@ -12,5 +12,5 @@ public interface JobReturn {
         }
     }
 
-    default void writeToReturnProps(JobExecutionContext context, JobDataMap props) {}
+    default void writeToReturnProps(JobExecutionContext context, JobDataMap returnProps) {}
 }

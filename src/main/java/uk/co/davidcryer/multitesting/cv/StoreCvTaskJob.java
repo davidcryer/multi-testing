@@ -12,14 +12,13 @@ import uk.co.davidcryer.quartz.TaskJob;
 
 import java.util.function.Function;
 
-import static uk.co.davidcryer.quartz.TaskUtils.mapProps;
+import static uk.co.davidcryer.quartz.TaskUtils.pass;
 
 @Component
 public class StoreCvTaskJob extends TaskJob {
     public static final String KEY = "store-cv";
     private final StoreCvTaskService service;
     private final ObjectMapper objectMapper;
-    private String cvId;
 
     @Autowired
     public StoreCvTaskJob(Scheduler scheduler, StoreCvTaskService service, ObjectMapper objectMapper) {
@@ -33,15 +32,17 @@ public class StoreCvTaskJob extends TaskJob {
         try {
             var props = context.getMergedJobDataMap();
             var request = objectMapper.readValue(props.getString("cv"), CvRequest.class);
-            cvId = service.add(request);
+            var cvId = service.add(request);
+            props.put("cvId", cvId);
         } catch (JsonProcessingException e) {
             throw new JobExecutionException(e);
         }
     }
 
     @Override
-    public void writeToReturnProps(JobExecutionContext context, JobDataMap props) {
-        props.put("cvId", cvId);
+    public void writeToReturnProps(JobExecutionContext context, JobDataMap returnProps) {
+        var props = context.getMergedJobDataMap();
+        returnProps.put("cvId", props.getString("cvId"));
     }
 
     public static JobDataMap props(String cv) {
@@ -51,6 +52,6 @@ public class StoreCvTaskJob extends TaskJob {
     }
 
     public static Function<JobDataMap, JobDataMap> returnPropsMapper(Function<String, JobDataMap> map) {
-        return mapProps(map, "cv");
+        return pass("cvId", map);
     }
 }
