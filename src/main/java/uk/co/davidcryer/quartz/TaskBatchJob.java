@@ -23,7 +23,7 @@ public abstract class TaskBatchJob implements Job, JobReturn, MarkableAsFinished
         var props = context.getMergedJobDataMap();
         try {
             var lastJob = hasLastJobKey(props) ? getLastJobKey(props) : "";
-            log.info("{} executing concurrent tasks job with last job {}", getJobName(context), lastJob);
+            log.info("{} executing task batch job with last job {}", getJobName(context), lastJob);
             if (lastJob.equals("")) {
                 triggerJobs(context, props);
             } else {
