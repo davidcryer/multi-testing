@@ -5,7 +5,9 @@ import org.quartz.JobExecutionContext;
 import org.quartz.Scheduler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import uk.co.davidcryer.quartz.ConcurrentTasks;
 import uk.co.davidcryer.quartz.ConcurrentTasksJob;
+import uk.co.davidcryer.quartz.Task;
 
 import java.util.List;
 import java.util.function.Function;
@@ -23,7 +25,7 @@ public class PublishCvTaskJob extends ConcurrentTasksJob {
     protected List<Task> getTasks() {
         return List.of(
                 new Task(PublishCvToClientTaskJob.KEY, PublishCvTaskJob::mapToPublishCvToClientProps),
-                new ConcurrentTask(PublishCvToKafkaConcurrentTasksJob.KEY, PublishCvTaskJob::mapToPublishCvToKafkaProps, PublishCvToKafkaConcurrentTasksJob.class)
+                new ConcurrentTasks(PublishCvToKafkaConcurrentTasksJob.KEY, PublishCvTaskJob::mapToPublishCvToKafkaProps, PublishCvToKafkaConcurrentTasksJob.class)
         );
     }
 
