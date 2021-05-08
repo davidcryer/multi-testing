@@ -26,7 +26,7 @@ public class DeleteOldJobsListener extends JobListenerSupport {
     @Override
     public void jobWasExecuted(JobExecutionContext context, JobExecutionException jobException) {
         try {
-            if (shouldDeleteJob(context)) {
+            if (shouldDeleteJob(context, jobException)) {
                 var jobKey = context.getJobDetail().getKey();
                 log.info("Deleting job {}", jobKey);
                 var didDelete = scheduler.deleteJob(jobKey);
@@ -39,9 +39,9 @@ public class DeleteOldJobsListener extends JobListenerSupport {
         }
     }
 
-    private boolean shouldDeleteJob(JobExecutionContext context) {
+    private boolean shouldDeleteJob(JobExecutionContext context, JobExecutionException jobException) {
         var jobName = context.getJobDetail().getKey().getName();
         var jobProps = context.getJobDetail().getJobDataMap();
-        return jobsRequiringDeletion.contains(jobName) && isFinished(jobProps);
+        return jobsRequiringDeletion.contains(jobName) && (isFinished(jobProps) || jobException != null);
     }
 }
