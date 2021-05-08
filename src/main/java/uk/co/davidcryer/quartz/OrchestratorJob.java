@@ -7,7 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 
-import static uk.co.davidcryer.quartz.AbstractTaskJob.PROPS_JOB_LAST;
+import static uk.co.davidcryer.quartz.Task.getLastJobKey;
+import static uk.co.davidcryer.quartz.Task.hasLastJobKey;
 
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @Slf4j
@@ -27,8 +28,8 @@ public abstract class OrchestratorJob implements Job, MarkableAsFinished {
     private void handle(JobExecutionContext context, JobDataMap props) throws SchedulerException {
         Task nextTask = null;
         var tasks = getTasks();
-        if (props.containsKey(PROPS_JOB_LAST)) {
-            var lastJobKey = props.getString(PROPS_JOB_LAST);
+        if (hasLastJobKey(props)) {
+            var lastJobKey = getLastJobKey(props);
             log.info("executing orchestrator with last job {}", lastJobKey);
             Task lastTask = null;
             for (int i = 0; i < tasks.size(); i++) {

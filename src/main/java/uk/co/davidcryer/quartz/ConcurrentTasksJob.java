@@ -1,5 +1,6 @@
 package uk.co.davidcryer.quartz;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.*;
 
@@ -7,21 +8,21 @@ import java.util.List;
 import java.util.function.Predicate;
 
 import static uk.co.davidcryer.quartz.JobExecutionContextUtils.getJobName;
+import static uk.co.davidcryer.quartz.Task.getLastJobKey;
+import static uk.co.davidcryer.quartz.Task.hasLastJobKey;
 
+@RequiredArgsConstructor
 @Slf4j
 @DisallowConcurrentExecution
 @PersistJobDataAfterExecution
-public abstract class ConcurrentTasksJob extends AbstractTaskJob implements MarkableAsFinished {
-
-    public ConcurrentTasksJob(Scheduler scheduler) {
-        super(scheduler);
-    }
+public abstract class ConcurrentTasksJob implements Job, JobReturn, MarkableAsFinished {
+    private final Scheduler scheduler;
 
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
         var props = context.getMergedJobDataMap();
         try {
-            var lastJob = props.containsKey(PROPS_JOB_LAST) ? props.getString(PROPS_JOB_LAST) : "";
+            var lastJob = hasLastJobKey(props) ? getLastJobKey(props) : "";
             log.info("{} executing concurrent tasks job with last job {}", getJobName(context), lastJob);
             if (lastJob.equals("")) {
                 triggerJobs(context, props);
@@ -50,7 +51,7 @@ public abstract class ConcurrentTasksJob extends AbstractTaskJob implements Mark
         task.getReturnPropsWriter().accept(jobProps);
         if (areAllTasksComplete(context, tasks)) {
             markAsFinished(context, jobProps);
-            triggerNextJob(context);
+            triggerReturnJob(context, scheduler);
         }
     }
 

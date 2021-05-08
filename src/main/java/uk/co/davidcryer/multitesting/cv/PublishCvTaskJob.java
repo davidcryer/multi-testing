@@ -46,7 +46,7 @@ public class PublishCvTaskJob extends ConcurrentTasksJob {
     }
 
     @Override
-    protected void writeToReturnProps(JobExecutionContext context, JobDataMap props) {
+    public void writeToReturnProps(JobExecutionContext context, JobDataMap props) {
         props.put("cvId", context.getJobDetail().getJobDataMap().getString("cvId"));
     }
 
