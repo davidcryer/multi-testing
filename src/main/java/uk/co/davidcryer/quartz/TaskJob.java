@@ -16,7 +16,7 @@ public abstract class TaskJob implements Job, JobReturn {
 
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
-        log.info("executing job {}", getJobName(context));
+        log.info("Executing {} task job", getJobName(context));
         executeTask(context);
         triggerReturnJob(context, scheduler);
     }
