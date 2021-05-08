@@ -8,8 +8,8 @@ import java.util.List;
 import java.util.function.Predicate;
 
 import static uk.co.davidcryer.quartz.JobExecutionContextUtils.getJobName;
-import static uk.co.davidcryer.quartz.Task.getLastJobKey;
-import static uk.co.davidcryer.quartz.Task.hasLastJobKey;
+import static uk.co.davidcryer.quartz.TaskUtils.getLastJobKey;
+import static uk.co.davidcryer.quartz.TaskUtils.hasLastJobKey;
 
 @RequiredArgsConstructor
 @Slf4j
