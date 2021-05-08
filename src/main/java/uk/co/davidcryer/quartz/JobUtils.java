@@ -6,7 +6,7 @@ import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-public class TaskUtils {
+public class JobUtils {
     private static final String PROPS_JOB_LAST = "job.last";
     private static final String PROPS_JOB_RETURN_NAME = "job.return.name";
     private static final String PROPS_JOB_RETURN_GROUP = "job.return.group";

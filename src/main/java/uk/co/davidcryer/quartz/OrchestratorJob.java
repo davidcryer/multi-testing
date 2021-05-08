@@ -7,8 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 
-import static uk.co.davidcryer.quartz.TaskUtils.getLastJobKey;
-import static uk.co.davidcryer.quartz.TaskUtils.hasLastJobKey;
+import static uk.co.davidcryer.quartz.JobUtils.getLastJobKey;
+import static uk.co.davidcryer.quartz.JobUtils.hasLastJobKey;
 
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @Slf4j

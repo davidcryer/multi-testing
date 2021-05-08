@@ -35,7 +35,7 @@ public class Task {
     }
 
     public void triggerJob(JobExecutionContext context, JobDataMap props, Scheduler scheduler) throws SchedulerException {
-        TaskUtils.triggerJob(context, props, scheduler, key, propsMapper);
+        JobUtils.triggerJob(context, props, scheduler, key, propsMapper);
     }
 
     public static class Batch extends Task {
@@ -67,7 +67,7 @@ public class Task {
 
         @Override
         public void triggerJob(JobExecutionContext context, JobDataMap props, Scheduler scheduler) throws SchedulerException {
-            TaskUtils.triggerBatchJob(context, props, scheduler, getKey(), getPropsMapper(), batchJobClass);
+            JobUtils.triggerBatchJob(context, props, scheduler, getKey(), getPropsMapper(), batchJobClass);
         }
     }
 }
