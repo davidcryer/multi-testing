@@ -12,10 +12,10 @@ public class JobUtils {
     private static final String PROPS_JOB_RETURN_GROUP = "job.return.group";
 
     public static void triggerJob(JobExecutionContext context,
-                           JobDataMap props,
-                           Scheduler scheduler,
-                           String key,
-                           Function<JobDataMap, JobDataMap> propsMapper) throws SchedulerException {
+                                  JobDataMap props,
+                                  Scheduler scheduler,
+                                  String key,
+                                  Function<JobDataMap, JobDataMap> propsMapper) throws SchedulerException {
         var triggerProps = propsMapper.apply(props);
         var thisJobKey = context.getJobDetail().getKey();
         triggerProps.put(PROPS_JOB_RETURN_NAME, thisJobKey.getName());
@@ -43,8 +43,8 @@ public class JobUtils {
     }
 
     public static void triggerReturnJob(JobExecutionContext context,
-                                 Scheduler scheduler,
-                                 BiConsumer<JobExecutionContext, JobDataMap> returnPropsWriter) throws SchedulerException {
+                                        Scheduler scheduler,
+                                        BiConsumer<JobExecutionContext, JobDataMap> returnPropsWriter) throws SchedulerException {
         var props = context.getMergedJobDataMap();
         if (props.containsKey(PROPS_JOB_RETURN_NAME)) {
             var returnProps = new JobDataMap();
