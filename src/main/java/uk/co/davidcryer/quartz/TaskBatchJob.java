@@ -9,7 +9,6 @@ import java.util.function.Predicate;
 
 import static uk.co.davidcryer.quartz.JobExecutionContextUtils.getJobName;
 import static uk.co.davidcryer.quartz.JobUtils.getLastJobKey;
-import static uk.co.davidcryer.quartz.JobUtils.hasLastJobKey;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -22,11 +21,12 @@ public abstract class TaskBatchJob implements Job, JobReturn, MarkableAsFinished
     public void execute(JobExecutionContext context) throws JobExecutionException {
         var props = context.getMergedJobDataMap();
         try {
-            var lastJob = hasLastJobKey(props) ? getLastJobKey(props) : "";
-            log.info("{} executing task batch job with last job {}", getJobName(context), lastJob);
-            if (lastJob.equals("")) {
+            var lastJob = getLastJobKey(props);
+            if (lastJob == null) {
+                log.info("Executing {} task batch job for first time", getJobName(context));
                 triggerJobs(context, props);
             } else {
+                log.info("Executing {} task batch job with last job {}", getJobName(context), lastJob);
                 handleLastJob(context, props, lastJob);
             }
         } catch (SchedulerException e) {

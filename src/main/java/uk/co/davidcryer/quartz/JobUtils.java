@@ -64,11 +64,7 @@ public class JobUtils {
         return JobKey.jobKey(name);
     }
 
-    public static boolean hasLastJobKey(JobDataMap props) {
-        return props.containsKey(PROPS_JOB_LAST);
-    }
-
     public static String getLastJobKey(JobDataMap props) {
-        return props.getString(PROPS_JOB_LAST);
+        return props.containsKey(PROPS_JOB_LAST) ? props.getString(PROPS_JOB_LAST) : null;
     }
 }
