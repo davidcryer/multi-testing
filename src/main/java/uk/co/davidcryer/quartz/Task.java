@@ -1,37 +1,31 @@
 package uk.co.davidcryer.quartz;
 
+import lombok.Builder;
 import lombok.Getter;
 import org.quartz.*;
 
-import java.util.function.Consumer;
+import java.util.Optional;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
 @Getter
 public class Task {
     private static final Predicate<JobDataMap> IMPLIED_SUCCESS_PREDICATE = ignore -> true;
-    private static final Consumer<JobDataMap> NO_OP_CONSUMER = props -> {};
+    private static final BiConsumer<JobDataMap, JobDataMap> NO_OP_CONSUMER = (props, jobProps) -> {};
     private final String key;
     private final Function<JobDataMap, JobDataMap> propsMapper;
+    private final Boolean allowedToError;
     private final Predicate<JobDataMap> successfulJobCondition;
-    private final Consumer<JobDataMap> returnPropsWriter;
+    private final BiConsumer<JobDataMap, JobDataMap> returnPropsConsumer;
 
-    public Task(String key, Function<JobDataMap, JobDataMap> propsMapper) {
-        this(key, propsMapper, IMPLIED_SUCCESS_PREDICATE, NO_OP_CONSUMER);
-    }
-
-    public Task(String key, Function<JobDataMap, JobDataMap> propsMapper, Predicate<JobDataMap> successfulJobCondition) {
-        this(key, propsMapper, successfulJobCondition, NO_OP_CONSUMER);
-    }
-
-    public Task(String key,
-                Function<JobDataMap, JobDataMap> propsMapper,
-                Predicate<JobDataMap> successfulJobCondition,
-                Consumer<JobDataMap> returnPropsWriter) {
-        this.key = key;
-        this.propsMapper = propsMapper;
-        this.successfulJobCondition = successfulJobCondition;
-        this.returnPropsWriter = returnPropsWriter;
+    @Builder
+    public Task(String key, Function<JobDataMap, JobDataMap> propsMapper, Boolean allowedToError, Predicate<JobDataMap> successfulJobCondition, BiConsumer<JobDataMap, JobDataMap> returnPropsConsumer) {
+        this.key = Optional.ofNullable(key).orElseThrow(() -> new RuntimeException("Task key cannot be null"));
+        this.propsMapper = Optional.ofNullable(propsMapper).orElse(ignore -> new JobDataMap());
+        this.allowedToError = Optional.ofNullable(allowedToError).orElse(false);
+        this.successfulJobCondition = Optional.ofNullable(successfulJobCondition).orElse(IMPLIED_SUCCESS_PREDICATE);
+        this.returnPropsConsumer = Optional.ofNullable(returnPropsConsumer).orElse(NO_OP_CONSUMER);
     }
 
     public void triggerJob(JobExecutionContext context, JobDataMap props, Scheduler scheduler) throws SchedulerException {
@@ -41,28 +35,10 @@ public class Task {
     public static class Batch extends Task {
         private final Class<? extends Job> batchJobClass;
 
-        public Batch(String key,
-                         Function<JobDataMap, JobDataMap> propsMapper,
-                         Class<? extends Job> batchJobClass) {
-            super(key, propsMapper);
-            this.batchJobClass = batchJobClass;
-        }
-
-        public Batch(String key,
-                         Function<JobDataMap, JobDataMap> propsMapper,
-                         Predicate<JobDataMap> successfulJobCondition,
-                         Class<? extends Job> batchJobClass) {
-            super(key, propsMapper, successfulJobCondition);
-            this.batchJobClass = batchJobClass;
-        }
-
-        public Batch(String key,
-                         Function<JobDataMap, JobDataMap> propsMapper,
-                         Predicate<JobDataMap> successfulJobCondition,
-                         Consumer<JobDataMap> returnPropsWriter,
-                         Class<? extends Job> batchJobClass) {
-            super(key, propsMapper, successfulJobCondition, returnPropsWriter);
-            this.batchJobClass = batchJobClass;
+        @Builder(builderMethodName = "batchBuilder")
+        public Batch(String key, Function<JobDataMap, JobDataMap> propsMapper, boolean allowedToError, Predicate<JobDataMap> successfulJobCondition, BiConsumer<JobDataMap, JobDataMap> returnPropsConsumer, Class<? extends Job> batchJobClass) {
+            super(key, propsMapper, allowedToError, successfulJobCondition, returnPropsConsumer);
+            this.batchJobClass = Optional.ofNullable(batchJobClass).orElseThrow(() -> new RuntimeException("Batch task class cannot be null"));
         }
 
         @Override

@@ -9,10 +9,11 @@ import java.util.List;
 
 import static uk.co.davidcryer.quartz.JobExecutionContextUtils.getJobName;
 import static uk.co.davidcryer.quartz.JobUtils.getLastJobKey;
+import static uk.co.davidcryer.quartz.TaskUtils.markAsFinished;
 
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @Slf4j
-public abstract class OrchestratorJob implements Job, MarkableAsFinished {
+public abstract class OrchestratorJob implements Job {
     private final Scheduler scheduler;
 
     @Override
@@ -47,8 +48,9 @@ public abstract class OrchestratorJob implements Job, MarkableAsFinished {
             if (lastTask == null) {
                 throw new JobExecutionException("Task does not exist for last job key " + lastJobKey);
             }
+            lastTask.getReturnPropsConsumer().accept(props, context.getJobDetail().getJobDataMap());
             if (nextTask == null) {
-                markAsFinished(context, props);
+                markAsFinished(context.getJobDetail().getJobDataMap());
                 return;
             }
         }

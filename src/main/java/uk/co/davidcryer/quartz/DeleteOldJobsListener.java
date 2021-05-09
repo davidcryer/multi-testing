@@ -10,7 +10,7 @@ import org.quartz.listeners.JobListenerSupport;
 
 import java.util.Set;
 
-import static uk.co.davidcryer.quartz.MarkableAsFinished.isFinished;
+import static uk.co.davidcryer.quartz.TaskUtils.isFinished;
 
 @RequiredArgsConstructor
 @Slf4j

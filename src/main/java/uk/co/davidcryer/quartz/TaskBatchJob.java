@@ -9,12 +9,14 @@ import java.util.function.Predicate;
 
 import static uk.co.davidcryer.quartz.JobExecutionContextUtils.getJobName;
 import static uk.co.davidcryer.quartz.JobUtils.getLastJobKey;
+import static uk.co.davidcryer.quartz.JobUtils.triggerReturnJob;
+import static uk.co.davidcryer.quartz.TaskUtils.markAsFinished;
 
 @RequiredArgsConstructor
 @Slf4j
 @DisallowConcurrentExecution
 @PersistJobDataAfterExecution
-public abstract class TaskBatchJob implements Job, JobReturn, MarkableAsFinished {
+public abstract class TaskBatchJob implements Job, ReturnPropsWriter {
     private final Scheduler scheduler;
 
     @Override
@@ -48,10 +50,10 @@ public abstract class TaskBatchJob implements Job, JobReturn, MarkableAsFinished
                 .findFirst()
                 .orElseThrow(() -> new JobExecutionException(getJobName(context) + " does not have task for last job " + lastJob));
         jobProps.put(lastJob, task.getSuccessfulJobCondition().test(props));
-        task.getReturnPropsWriter().accept(jobProps);
+        task.getReturnPropsConsumer().accept(props, jobProps);
         if (areAllTasksComplete(context, tasks)) {
-            markAsFinished(context, jobProps);
-            triggerReturnJob(context, scheduler);
+            markAsFinished(jobProps);
+            triggerReturnJob(context, scheduler, this::writeToReturnProps);
         }
     }
 

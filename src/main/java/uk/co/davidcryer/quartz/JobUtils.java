@@ -49,7 +49,11 @@ public class JobUtils {
         if (props.containsKey(PROPS_JOB_RETURN_NAME)) {
             var returnProps = new JobDataMap();
             returnProps.put(PROPS_JOB_LAST, context.getJobDetail().getKey().getName());
-            returnPropsWriter.accept(context, returnProps);
+//            if (didError) {
+//                markAsErrored(returnProps);
+//            } else {
+                returnPropsWriter.accept(context, returnProps);
+//            }
             var returnJobKey = getReturnJobKey(props);
             scheduler.triggerJob(returnJobKey, returnProps);
         }

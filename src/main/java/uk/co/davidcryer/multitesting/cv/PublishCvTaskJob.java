@@ -25,8 +25,15 @@ public class PublishCvTaskJob extends TaskBatchJob {
     @Override
     protected List<Task> getTasks() {
         return List.of(
-                new Task(PublishCvToClientTaskJob.KEY, pass("cvId", PublishCvToClientTaskJob::props)),
-                new Task.Batch(PublishCvToKafkaTaskBatchJob.KEY, pass("cvId", PublishCvToKafkaTaskJob::props), PublishCvToKafkaTaskBatchJob.class)
+                Task.builder()
+                        .key(PublishCvToClientTaskJob.KEY)
+                        .propsMapper(pass("cvId", PublishCvToClientTaskJob::props))
+                        .build(),
+                Task.Batch.batchBuilder()
+                        .key(PublishCvToKafkaTaskBatchJob.KEY)
+                        .propsMapper(pass("cvId", PublishCvToKafkaTaskJob::props))
+                        .batchJobClass(PublishCvToKafkaTaskBatchJob.class)
+                        .build()
         );
     }
 

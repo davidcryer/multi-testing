@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.co.davidcryer.quartz.TaskJob;
 
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static uk.co.davidcryer.quartz.TaskUtils.pass;
@@ -19,6 +20,7 @@ public class StoreCvTaskJob extends TaskJob {
     public static final String KEY = "store-cv";
     private final StoreCvTaskService service;
     private final ObjectMapper objectMapper;
+    private String cvId;
 
     @Autowired
     public StoreCvTaskJob(Scheduler scheduler, StoreCvTaskService service, ObjectMapper objectMapper) {
@@ -32,17 +34,15 @@ public class StoreCvTaskJob extends TaskJob {
         try {
             var props = context.getMergedJobDataMap();
             var request = objectMapper.readValue(props.getString("cv"), CvRequest.class);
-            var cvId = service.add(request);
-            props.put("cvId", cvId);
+            cvId = service.add(request);
         } catch (JsonProcessingException e) {
             throw new JobExecutionException(e);
         }
     }
 
     @Override
-    public void writeToReturnProps(JobExecutionContext context, JobDataMap returnProps) {
-        var props = context.getMergedJobDataMap();
-        returnProps.put("cvId", props.getString("cvId"));
+    public void writeToReturnProps(JobExecutionContext context, JobDataMap props) {
+        props.put("cvId", cvId);
     }
 
     public static JobDataMap props(String cv) {
@@ -53,5 +53,10 @@ public class StoreCvTaskJob extends TaskJob {
 
     public static Function<JobDataMap, JobDataMap> returnPropsMapper(Function<String, JobDataMap> map) {
         return pass("cvId", map);
+    }
+
+    public static void withReturnProps(JobDataMap props, Consumer<String> propsConsumer) {
+        var cvId = props.getString("cvId");
+        propsConsumer.accept(cvId);
     }
 }

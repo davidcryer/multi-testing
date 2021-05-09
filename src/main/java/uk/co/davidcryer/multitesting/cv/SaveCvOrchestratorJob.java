@@ -25,9 +25,19 @@ public class SaveCvOrchestratorJob extends OrchestratorJob {
     @Override
     protected List<Task> getTasks() {
         return List.of(
-                new Task(StoreCvTaskJob.KEY, pass("cv", StoreCvTaskJob::props)),
-                new Task.Batch(PublishCvTaskJob.KEY, StoreCvTaskJob.returnPropsMapper(PublishCvTaskJob::props), PublishCvTaskJob.class),
-                new Task(UpdateCvWithPublishStatusTaskJob.KEY, PublishCvTaskJob.returnPropsMapper(UpdateCvWithPublishStatusTaskJob::props))
+                Task.builder()
+                        .key(StoreCvTaskJob.KEY)
+                        .propsMapper(pass("cv", StoreCvTaskJob::props))
+                        .build(),
+                Task.Batch.batchBuilder()
+                        .key(PublishCvTaskJob.KEY)
+                        .propsMapper(StoreCvTaskJob.returnPropsMapper(PublishCvTaskJob::props))
+                        .batchJobClass(PublishCvTaskJob.class)
+                        .build(),
+                Task.builder()
+                        .key(UpdateCvWithPublishStatusTaskJob.KEY)
+                        .propsMapper(PublishCvTaskJob.returnPropsMapper(UpdateCvWithPublishStatusTaskJob::props))
+                        .build()
         );
     }
 
