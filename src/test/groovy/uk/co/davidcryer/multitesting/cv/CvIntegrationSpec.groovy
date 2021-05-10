@@ -2,6 +2,9 @@ package uk.co.davidcryer.multitesting.cv
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.WireMockServer
+import org.quartz.JobKey
+import org.quartz.Scheduler
+import org.quartz.impl.matchers.GroupMatcher
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.SpringBootTest
@@ -13,6 +16,7 @@ import uk.co.davidcryer.multitesting.utils.Requests
 import uk.co.davidcryer.multitesting.utils.TestKafkaConsumer
 
 import java.time.LocalDateTime
+import java.util.stream.Collectors
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
@@ -30,6 +34,8 @@ class CvIntegrationSpec extends Specification {
     private CvDbOps dbOps
     @Autowired
     private ObjectMapper objectMapper
+    @Autowired
+    private Scheduler scheduler
     private WireMockServer cvClient = new WireMockServer(wireMockConfig().port(9875))
 
     @TestConfiguration
@@ -140,6 +146,76 @@ class CvIntegrationSpec extends Specification {
         cleanup:
         kafkaHelper.get 1, 2000
         Thread.sleep 500
+        dbOps.deleteAll()
+    }
+
+    def "All persistent jobs are deleted when workflow finishes"() {
+        def emailAddress = "test-email-3";
+        given:
+        def request = objectMapper.readValue"""
+{
+    "emailAddress": "$emailAddress"
+}
+""", CvRequest
+
+        and: "wiremock is set up"
+        cvClient.start()
+        cvClient.stubFor(post("/cvs").willReturn(aResponse().withStatus(201)))
+
+        when: "cv is posted"
+        var response = template.postForEntity"/cvs", Requests.post(request), String
+        response.statusCode == ACCEPTED
+
+        and: "cv is processed"
+        def kafkaMessage = kafkaHelper.get(1, 2000).get(0)
+        Thread.sleep 1000
+
+        then: "Orchestrator does not exist for request email address"
+        scheduler.getJobKeys(GroupMatcher.groupEquals(emailAddress)).isEmpty()
+
+        and: "Batch Tasks do not exist"
+        var batchTasks = Set.of(PublishCvTaskJob.KEY, PublishCvToKafkaTaskBatchJob.KEY);
+        scheduler.getJobKeys(GroupMatcher.anyGroup()).stream()
+                .map(JobKey::getName)
+                .filter(batchTasks::contains)
+                .collect(Collectors.toList())
+                .isEmpty()
+
+        cleanup:
+        kafkaHelper.clear()
+        dbOps.deleteAll()
+        cvClient.stop()
+    }
+
+    def "All persistent jobs are deleted when workflow finishes despite task errors"() {
+        var emailAddress = "test-email-4"
+        given:
+        def request = objectMapper.readValue"""
+{
+    "emailAddress": "$emailAddress"
+}
+""", CvRequest
+
+        when: "cv is posted"
+        var response = template.postForEntity"/cvs", Requests.post(request), String
+        response.statusCode == ACCEPTED
+
+        and: "cv is processed"
+        kafkaHelper.get 1, 2000
+        Thread.sleep 500
+
+        then: "Orchestrator does not exist for request email address"
+        scheduler.getJobKeys(GroupMatcher.groupEquals(emailAddress)).isEmpty()
+
+        and: "Batch Tasks do not exist"
+        var batchTasks = Set.of(PublishCvTaskJob.KEY, PublishCvToKafkaTaskBatchJob.KEY);
+        scheduler.getJobKeys(GroupMatcher.anyGroup()).stream()
+                .map(JobKey::getName)
+                .filter(batchTasks::contains)
+                .collect(Collectors.toList())
+                .isEmpty()
+
+        cleanup:
         dbOps.deleteAll()
     }
 
