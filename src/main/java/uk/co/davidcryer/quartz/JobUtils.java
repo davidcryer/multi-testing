@@ -12,34 +12,37 @@ public class JobUtils {
     private static final String PROPS_JOB_RETURN_GROUP = "job.return.group";
 
     public static void triggerJob(JobExecutionContext context,
-                                  JobDataMap props,
                                   Scheduler scheduler,
                                   String key,
                                   Function<JobDataMap, JobDataMap> propsMapper) throws SchedulerException {
-        var triggerProps = propsMapper.apply(props);
-        var thisJobKey = context.getJobDetail().getKey();
-        triggerProps.put(PROPS_JOB_RETURN_NAME, thisJobKey.getName());
-        if (thisJobKey.getGroup() != null) {
-            triggerProps.put(PROPS_JOB_RETURN_GROUP, thisJobKey.getGroup());
-        }
+        var triggerProps = propsMapper.apply(context.getMergedJobDataMap());
+        putReturnKey(context, triggerProps);
         scheduler.triggerJob(JobKey.jobKey(key), triggerProps);
     }
 
     public static void triggerBatchJob(JobExecutionContext context,
-                                       JobDataMap props,
                                        Scheduler scheduler,
                                        String key,
                                        Function<JobDataMap, JobDataMap> propsMapper,
                                        Class<? extends Job> batchJobClass) throws SchedulerException {
-        var jobProps = propsMapper.apply(props);
-        var thisJobKey = context.getJobDetail().getKey();
-        jobProps.put(PROPS_JOB_RETURN_NAME, thisJobKey.getName());
-        if (thisJobKey.getGroup() != null) {
-            jobProps.put(PROPS_JOB_RETURN_GROUP, thisJobKey.getGroup());
-        }
+        var jobProps = propsMapper.apply(context.getMergedJobDataMap());
+        putReturnKey(context, jobProps);
         var jobKey = JobKey.jobKey(key, UUID.randomUUID().toString());
-        scheduler.addJob(JobBuilder.newJob(batchJobClass).withIdentity(jobKey).storeDurably().usingJobData(jobProps).build(), false);
+        scheduler.addJob(JobBuilder.newJob(batchJobClass)
+                        .withIdentity(jobKey)
+                        .storeDurably()
+                        .usingJobData(jobProps)
+                        .build(),
+                false);
         scheduler.triggerJob(jobKey);
+    }
+
+    private static void putReturnKey(JobExecutionContext context, JobDataMap props) {
+        var key = context.getJobDetail().getKey();
+        props.put(PROPS_JOB_RETURN_NAME, key.getName());
+        if (key.getGroup() != null) {
+            props.put(PROPS_JOB_RETURN_GROUP, key.getGroup());
+        }
     }
 
     public static void triggerReturnJob(JobExecutionContext context,
@@ -64,7 +67,8 @@ public class JobUtils {
         return JobKey.jobKey(name);
     }
 
-    public static String getLastJobKey(JobDataMap props) {
+    public static String getLastJobKey(JobExecutionContext context) {
+        var props = context.getTrigger().getJobDataMap();
         return props.containsKey(PROPS_JOB_LAST) ? props.getString(PROPS_JOB_LAST) : null;
     }
 }

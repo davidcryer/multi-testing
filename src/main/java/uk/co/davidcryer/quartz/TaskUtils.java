@@ -2,6 +2,7 @@ package uk.co.davidcryer.quartz;
 
 import org.apache.tomcat.util.codec.binary.Base64;
 import org.quartz.JobDataMap;
+import org.quartz.JobExecutionContext;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -16,24 +17,29 @@ public class TaskUtils {
     private static final String PROPS_ERROR = "error";
     private static final String PROPS_ERRORED_TASKS = "erroredTasks";
 
-    static void markAsErrored(JobDataMap props, String message) {
-        props.put(PROPS_IS_ERRORED, true);
-        props.put(PROPS_ERROR, message);
+    public static void markAsErrored(JobExecutionContext context, String message) {
+        var jobProps = context.getJobDetail().getJobDataMap();
+        jobProps.put(PROPS_IS_ERRORED, true);
+        jobProps.put(PROPS_ERROR, message);
     }
 
-    static boolean isErrored(JobDataMap props) {
+    public static boolean isLastJobErrored(JobExecutionContext context) {
+        return isErrored(context.getTrigger().getJobDataMap());
+    }
+
+    public static boolean isErrored(JobDataMap props) {
         return props.containsKey(PROPS_IS_ERRORED) && props.getBoolean(PROPS_IS_ERRORED);
     }
 
-    static String getError(JobDataMap props) {
-        return props.getString(PROPS_ERROR);
+    public static String getLastJobError(JobExecutionContext context) {
+        return context.getTrigger().getJobDataMap().getString(PROPS_ERROR);
     }
 
-    static void markAsFinished(JobDataMap props) {
-        props.put(PROPS_IS_FINISHED, true);
+    public static void markAsFinished(JobExecutionContext context) {
+        context.getJobDetail().getJobDataMap().put(PROPS_IS_FINISHED, true);
     }
 
-    static boolean isFinished(JobDataMap props) {
+    public static boolean isFinished(JobDataMap props) {
         return props.containsKey(PROPS_IS_FINISHED) && props.getBoolean(PROPS_IS_FINISHED);
     }
 

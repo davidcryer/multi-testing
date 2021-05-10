@@ -10,6 +10,8 @@ import org.quartz.listeners.JobListenerSupport;
 
 import java.util.Set;
 
+import static uk.co.davidcryer.quartz.JobExecutionContextUtils.getJobName;
+import static uk.co.davidcryer.quartz.TaskUtils.isErrored;
 import static uk.co.davidcryer.quartz.TaskUtils.isFinished;
 
 @RequiredArgsConstructor
@@ -40,8 +42,8 @@ public class DeleteOldJobsListener extends JobListenerSupport {
     }
 
     private boolean shouldDeleteJob(JobExecutionContext context, JobExecutionException jobException) {
-        var jobName = context.getJobDetail().getKey().getName();
         var jobProps = context.getJobDetail().getJobDataMap();
-        return jobsRequiringDeletion.contains(jobName) && (isFinished(jobProps) || jobException != null);
+        return jobsRequiringDeletion.contains(getJobName(context)) &&
+                (jobException != null || isFinished(jobProps) || isErrored(jobProps));
     }
 }

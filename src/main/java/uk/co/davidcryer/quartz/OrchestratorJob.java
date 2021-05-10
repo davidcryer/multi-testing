@@ -18,18 +18,17 @@ public abstract class OrchestratorJob implements Job {
 
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
-        var props = context.getMergedJobDataMap();
         try {
-            handle(context, props);
+            handle(context);
         } catch (SchedulerException e) {
             throw new JobExecutionException(e);
         }
     }
 
-    private void handle(JobExecutionContext context, JobDataMap props) throws SchedulerException {
+    private void handle(JobExecutionContext context) throws SchedulerException {
         Task nextTask = null;
         var tasks = getTasks();
-        var lastJobKey = getLastJobKey(props);
+        var lastJobKey = getLastJobKey(context);
         if (lastJobKey == null) {
             log.info("Executing {} orchestrator for first job", getJobName(context));
             nextTask = getTasks().get(0);
@@ -49,22 +48,25 @@ public abstract class OrchestratorJob implements Job {
             if (lastTask == null) {
                 throw new JobExecutionException("Task does not exist for last job key " + lastJobKey);
             }
-            if (isErrored(props)) {
+            if (isLastJobErrored(context)) {
                 if (!lastTask.getAllowedToError()) {
-                    var error = getError(props);
-                    markAsErrored(context.getJobDetail().getJobDataMap(), error);
-                    markAsFinished(context.getJobDetail().getJobDataMap());
+                    var error = getLastJobError(context);
+                    log.info("{} marked as errored with message: {}", getJobName(context), error);
+                    markAsErrored(context, error);
                     return;
                 }
             } else {
-                lastTask.getReturnPropsConsumer().accept(props, context.getJobDetail().getJobDataMap());
+                lastTask.getReturnPropsConsumer().accept(//TODO pass context only? Or pass context through getTasks()?
+                        context.getMergedJobDataMap(),
+                        context.getJobDetail().getJobDataMap()
+                );
             }
             if (nextTask == null) {
-                markAsFinished(context.getJobDetail().getJobDataMap());
+                markAsFinished(context);
                 return;
             }
         }
-        nextTask.triggerJob(context, props, scheduler);
+        nextTask.triggerJob(context, scheduler);
     }
 
     protected abstract List<Task> getTasks();

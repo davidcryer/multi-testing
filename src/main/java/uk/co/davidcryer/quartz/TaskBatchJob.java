@@ -21,57 +21,55 @@ public abstract class TaskBatchJob implements Job, ReturnPropsWriter {
 
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
-        var props = context.getMergedJobDataMap();
         try {
-            var lastJob = getLastJobKey(props);
+            var lastJob = getLastJobKey(context);
             if (lastJob == null) {
                 log.info("Executing {} task batch job for first time", getJobName(context));
-                triggerJobs(context, props);
+                triggerJobs(context);
             } else {
                 log.info("Executing {} task batch job with last job {}", getJobName(context), lastJob);
-                handleLastJob(context, props, lastJob);
+                handleLastJob(context, lastJob);
             }
         } catch (SchedulerException e) {
             throw new JobExecutionException(e);
         }
     }
 
-    private void triggerJobs(JobExecutionContext context, JobDataMap props) throws SchedulerException {
+    private void triggerJobs(JobExecutionContext context) throws SchedulerException {
         for (Task task : getTasks()) {
-            task.triggerJob(context, props, scheduler);
+            task.triggerJob(context, scheduler);
         }
     }
 
-    private void handleLastJob(JobExecutionContext context, JobDataMap props, String lastJob) throws SchedulerException {
+    private void handleLastJob(JobExecutionContext context, String lastJob) throws SchedulerException {
         var jobProps = context.getJobDetail().getJobDataMap();
         var tasks = getTasks();
         var lastTask = tasks.stream()
                 .filter(t -> t.getKey().equals(lastJob))
                 .findFirst()
                 .orElseThrow(() -> new JobExecutionException(getJobName(context) + " does not have task for last job " + lastJob));
-        if (isErrored(props)) {
+        if (isLastJobErrored(context)) {
             if (!lastTask.getAllowedToError()) {
-                var error = getError(props);
+                var error = getLastJobError(context);
                 addErroredTaskEntry(jobProps, lastTask, error);
             }
         } else {
-            lastTask.getReturnPropsConsumer().accept(props, jobProps);
+            lastTask.getReturnPropsConsumer().accept(context.getMergedJobDataMap(), jobProps);
         }
         jobProps.put(lastTask.getKey(), true);
-        if (areAllTasksComplete(context, tasks)) {
+        if (areAllTasksComplete(jobProps, tasks)) {
             if (hasErroredTasks(jobProps)) {
                 var erroredTasks = getErroredTaskEntries(jobProps);
                 var error = String.join("\n", erroredTasks);
                 log.info("{} marked as errored with message: {}", getJobName(context), error);
-                markAsErrored(jobProps, error);
+                markAsErrored(context, error);
             }
-            markAsFinished(jobProps);
+            markAsFinished(context);
             triggerReturnJob(context, scheduler, this::writeToReturnProps);
         }
     }
 
-    private boolean areAllTasksComplete(JobExecutionContext context, List<Task> tasks) {
-        var props = context.getJobDetail().getJobDataMap();
+    private boolean areAllTasksComplete(JobDataMap props, List<Task> tasks) {
         Predicate<String> predicate = key -> props.containsKey(key) && props.getBoolean(key);
         return tasks.stream()
                 .map(Task::getKey)

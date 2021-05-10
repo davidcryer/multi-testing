@@ -11,6 +11,6 @@ public interface ReturnPropsWriter {
     default void writeToReturnProps(JobExecutionContext context, JobDataMap returnProps) {}
 
     static BiConsumer<JobExecutionContext, JobDataMap> getErrorWriterForReturnProps(Throwable t) {
-        return (context, props) -> markAsErrored(props, t.getMessage());
+        return (context, props) -> markAsErrored(context, t.getMessage());
     }
 }

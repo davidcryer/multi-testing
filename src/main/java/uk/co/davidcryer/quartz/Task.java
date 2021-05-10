@@ -29,8 +29,8 @@ public class Task {
         this.returnPropsConsumer = Optional.ofNullable(returnPropsConsumer).orElse((props, jobProps) -> {});
     }
 
-    public void triggerJob(JobExecutionContext context, JobDataMap props, Scheduler scheduler) throws SchedulerException {
-        JobUtils.triggerJob(context, props, scheduler, key, propsMapper);
+    public void triggerJob(JobExecutionContext context, Scheduler scheduler) throws SchedulerException {
+        JobUtils.triggerJob(context, scheduler, key, propsMapper);
     }
 
     public static class Batch extends Task {
@@ -48,8 +48,8 @@ public class Task {
         }
 
         @Override
-        public void triggerJob(JobExecutionContext context, JobDataMap props, Scheduler scheduler) throws SchedulerException {
-            JobUtils.triggerBatchJob(context, props, scheduler, getKey(), getPropsMapper(), batchJobClass);
+        public void triggerJob(JobExecutionContext context, Scheduler scheduler) throws SchedulerException {
+            JobUtils.triggerBatchJob(context, scheduler, getKey(), getPropsMapper(), batchJobClass);
         }
     }
 }
