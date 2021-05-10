@@ -21,8 +21,9 @@ public abstract class TaskJob implements Job, ReturnPropsWriter {
                 executeTask(context);
                 triggerReturnJob(context, scheduler, this::writeToReturnProps);
             } catch (Throwable t) {
-                log.info("{} errored with message: {}", getJobName(context), t.getMessage());
-                triggerReturnJob(context, scheduler, getErrorWriterForReturnProps(t));
+                var error = t.getMessage();
+                log.info("{} errored with message: {}", getJobName(context), error);
+                triggerReturnJob(context, scheduler, getErrorWriterForReturnProps(error));
             }
         } catch (SchedulerException e) {
             throw new JobExecutionException(e);

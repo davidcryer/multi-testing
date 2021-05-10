@@ -10,6 +10,7 @@ import java.util.function.Predicate;
 import static uk.co.davidcryer.quartz.JobExecutionContextUtils.getJobName;
 import static uk.co.davidcryer.quartz.JobUtils.getLastJobKey;
 import static uk.co.davidcryer.quartz.JobUtils.triggerReturnJob;
+import static uk.co.davidcryer.quartz.ReturnPropsWriter.getErrorWriterForReturnProps;
 import static uk.co.davidcryer.quartz.TaskUtils.*;
 
 @RequiredArgsConstructor
@@ -64,6 +65,8 @@ public abstract class TaskBatchJob implements Job, ReturnPropsWriter {
                 var error = String.join("\n", erroredTasks);
                 log.info("{} marked as errored with message: {}", getJobName(context), error);
                 markAsErrored(context, error);
+                triggerReturnJob(context, scheduler, getErrorWriterForReturnProps(error));
+                return;
             }
             markAsFinished(context);
             triggerReturnJob(context, scheduler, this::writeToReturnProps);

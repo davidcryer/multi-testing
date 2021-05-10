@@ -19,9 +19,12 @@ public class TaskUtils {
     private static final String PROPS_ERRORED_TASKS = "erroredTasks";
 
     public static void markAsErrored(JobExecutionContext context, String message) {
-        var jobProps = context.getJobDetail().getJobDataMap();
-        jobProps.put(PROPS_IS_ERRORED, true);
-        jobProps.put(PROPS_ERROR, message);
+        markAsErrored(context.getJobDetail().getJobDataMap(), message);
+    }
+
+    public static void markAsErrored(JobDataMap props, String message) {
+        props.put(PROPS_IS_ERRORED, true);
+        props.put(PROPS_ERROR, message);
     }
 
     public static boolean isLastJobErrored(JobExecutionContext context) {

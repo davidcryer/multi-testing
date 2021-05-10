@@ -6,6 +6,8 @@ import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
+import static uk.co.davidcryer.quartz.JobExecutionContextUtils.getJobName;
+
 public class JobUtils {
     private static final String PROPS_JOB_LAST = "job.last";
     private static final String PROPS_JOB_RETURN_NAME = "job.return.name";
@@ -51,7 +53,7 @@ public class JobUtils {
         var props = context.getMergedJobDataMap();
         if (props.containsKey(PROPS_JOB_RETURN_NAME)) {
             var returnProps = new JobDataMap();
-            returnProps.put(PROPS_JOB_LAST, context.getJobDetail().getKey().getName());
+            returnProps.put(PROPS_JOB_LAST, getJobName(context));
             returnPropsWriter.accept(context, returnProps);
             var returnJobKey = getReturnJobKey(props);
             scheduler.triggerJob(returnJobKey, returnProps);
