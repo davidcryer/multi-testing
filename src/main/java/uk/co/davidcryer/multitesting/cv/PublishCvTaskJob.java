@@ -10,7 +10,7 @@ import uk.co.davidcryer.quartz.TaskBatchJob;
 
 import java.util.List;
 
-import static uk.co.davidcryer.quartz.TaskUtils.pass;
+import static uk.co.davidcryer.quartz.PropsUtils.pass;
 
 @Component
 public class PublishCvTaskJob extends TaskBatchJob {
