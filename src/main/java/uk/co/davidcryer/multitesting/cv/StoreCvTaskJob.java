@@ -51,7 +51,7 @@ public class StoreCvTaskJob extends TaskJob {
         return props;
     }
 
-    public static Function<JobDataMap, JobDataMap> returnPropsMapper(Function<String, JobDataMap> map) {
+    public static Function<JobDataMap, JobDataMap> passReturnPropsTo(Function<String, JobDataMap> map) {
         return pass("cvId", map);
     }
 

@@ -48,7 +48,7 @@ public class PublishCvTaskJob extends TaskBatchJob {
         returnProps.put("cvId", context.getJobDetail().getJobDataMap().getString("cvId"));
     }
 
-    public static Function<JobDataMap, JobDataMap> returnPropsMapper(Function<String, JobDataMap> map) {
+    public static Function<JobDataMap, JobDataMap> passReturnPropsTo(Function<String, JobDataMap> map) {
         return pass("cvId", map);
     }
 }

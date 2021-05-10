@@ -31,12 +31,12 @@ public class SaveCvOrchestratorJob extends OrchestratorJob {
                         .build(),
                 Task.Batch.batchBuilder()
                         .key(PublishCvTaskJob.KEY)
-                        .propsMapper(StoreCvTaskJob.returnPropsMapper(PublishCvTaskJob::props))
+                        .propsMapper(StoreCvTaskJob.passReturnPropsTo(PublishCvTaskJob::props))
                         .batchJobClass(PublishCvTaskJob.class)
                         .build(),
                 Task.builder()
                         .key(UpdateCvWithPublishStatusTaskJob.KEY)
-                        .propsMapper(PublishCvTaskJob.returnPropsMapper(UpdateCvWithPublishStatusTaskJob::props))
+                        .propsMapper(PublishCvTaskJob.passReturnPropsTo(UpdateCvWithPublishStatusTaskJob::props))
                         .build()
         );
     }
