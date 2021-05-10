@@ -1,9 +1,6 @@
 package uk.co.davidcryer.multitesting.cv;
 
-import org.quartz.DisallowConcurrentExecution;
-import org.quartz.JobDataMap;
-import org.quartz.PersistJobDataAfterExecution;
-import org.quartz.Scheduler;
+import org.quartz.*;
 import org.springframework.stereotype.Component;
 import uk.co.davidcryer.quartz.Task;
 import uk.co.davidcryer.quartz.TaskBatchJob;
@@ -23,11 +20,12 @@ public class PublishCvToKafkaTaskBatchJob extends TaskBatchJob {
     }
 
     @Override
-    protected List<Task> getTasks() {
+    protected List<Task> getTasks(JobExecutionContext context) {
+        var props = context.getMergedJobDataMap();
         return List.of(
                 Task.builder()
                         .key(PublishCvToKafkaTaskJob.KEY)
-                        .propsMapper(pass("cvId", PublishCvToKafkaTaskJob::props))
+                        .propsSupplier(pass(props, "cvId", PublishCvToKafkaTaskJob::props))
                         .build(),
                 Task.builder()
                         .key(NoOpJob.KEY)

@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class TaskUtils {
@@ -43,8 +44,8 @@ public class TaskUtils {
         return props.containsKey(PROPS_IS_FINISHED) && props.getBoolean(PROPS_IS_FINISHED);
     }
 
-    public static Function<JobDataMap, JobDataMap> pass(String propKey, Function<String, JobDataMap> propsMapper) {
-        return props -> propsMapper.apply(props.getString(propKey));
+    public static Supplier<JobDataMap> pass(JobDataMap props, String propKey, Function<String, JobDataMap> propsMapper) {
+        return () -> propsMapper.apply(props.getString(propKey));
     }
 
     public static void addErroredTaskEntry(JobDataMap props, Task task, String error) {

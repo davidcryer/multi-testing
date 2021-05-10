@@ -11,9 +11,6 @@ import org.springframework.stereotype.Component;
 import uk.co.davidcryer.quartz.TaskJob;
 
 import java.util.function.Consumer;
-import java.util.function.Function;
-
-import static uk.co.davidcryer.quartz.TaskUtils.pass;
 
 @Component
 public class StoreCvTaskJob extends TaskJob {
@@ -49,10 +46,6 @@ public class StoreCvTaskJob extends TaskJob {
         var props = new JobDataMap();
         props.put("cv", cv);
         return props;
-    }
-
-    public static Function<JobDataMap, JobDataMap> passReturnPropsTo(Function<String, JobDataMap> map) {
-        return pass("cvId", map);
     }
 
     public static void withReturnProps(JobDataMap props, Consumer<String> propsConsumer) {

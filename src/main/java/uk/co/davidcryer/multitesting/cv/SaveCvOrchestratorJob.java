@@ -1,9 +1,6 @@
 package uk.co.davidcryer.multitesting.cv;
 
-import org.quartz.DisallowConcurrentExecution;
-import org.quartz.JobDataMap;
-import org.quartz.PersistJobDataAfterExecution;
-import org.quartz.Scheduler;
+import org.quartz.*;
 import org.springframework.stereotype.Component;
 import uk.co.davidcryer.quartz.OrchestratorJob;
 import uk.co.davidcryer.quartz.Task;
@@ -23,20 +20,25 @@ public class SaveCvOrchestratorJob extends OrchestratorJob {
     }
 
     @Override
-    protected List<Task> getTasks() {
+    protected List<Task> getTasks(JobExecutionContext context) {
+        var props = context.getMergedJobDataMap();
+        var jobProps = context.getJobDetail().getJobDataMap();
         return List.of(
                 Task.builder()
                         .key(StoreCvTaskJob.KEY)
-                        .propsMapper(pass("cv", StoreCvTaskJob::props))
+                        .propsSupplier(pass(props, "cv", StoreCvTaskJob::props))
+                        .onReturnListener(() -> {
+                            StoreCvTaskJob.withReturnProps(props, cvId -> jobProps.put("cvId", cvId));
+                        })
                         .build(),
                 Task.Batch.batchBuilder()
                         .key(PublishCvTaskJob.KEY)
-                        .propsMapper(StoreCvTaskJob.passReturnPropsTo(PublishCvTaskJob::props))
+                        .propsSupplier(pass(jobProps, "cvId", PublishCvTaskJob::props))
                         .batchJobClass(PublishCvTaskJob.class)
                         .build(),
                 Task.builder()
                         .key(UpdateCvWithPublishStatusTaskJob.KEY)
-                        .propsMapper(PublishCvTaskJob.passReturnPropsTo(UpdateCvWithPublishStatusTaskJob::props))
+                        .propsSupplier(pass(jobProps, "cvId", UpdateCvWithPublishStatusTaskJob::props))
                         .build()
         );
     }

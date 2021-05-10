@@ -4,7 +4,7 @@ import org.quartz.*;
 
 import java.util.UUID;
 import java.util.function.BiConsumer;
-import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class JobUtils {
     private static final String PROPS_JOB_LAST = "job.last";
@@ -14,8 +14,8 @@ public class JobUtils {
     public static void triggerJob(JobExecutionContext context,
                                   Scheduler scheduler,
                                   String key,
-                                  Function<JobDataMap, JobDataMap> propsMapper) throws SchedulerException {
-        var triggerProps = propsMapper.apply(context.getMergedJobDataMap());
+                                  Supplier<JobDataMap> propsSupplier) throws SchedulerException {
+        var triggerProps = propsSupplier.get();
         putReturnKey(context, triggerProps);
         scheduler.triggerJob(JobKey.jobKey(key), triggerProps);
     }
@@ -23,9 +23,9 @@ public class JobUtils {
     public static void triggerBatchJob(JobExecutionContext context,
                                        Scheduler scheduler,
                                        String key,
-                                       Function<JobDataMap, JobDataMap> propsMapper,
+                                       Supplier<JobDataMap> propsSupplier,
                                        Class<? extends Job> batchJobClass) throws SchedulerException {
-        var jobProps = propsMapper.apply(context.getMergedJobDataMap());
+        var jobProps = propsSupplier.get();
         putReturnKey(context, jobProps);
         var jobKey = JobKey.jobKey(key, UUID.randomUUID().toString());
         scheduler.addJob(JobBuilder.newJob(batchJobClass)

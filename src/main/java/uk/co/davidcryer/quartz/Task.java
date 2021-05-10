@@ -5,32 +5,31 @@ import lombok.Getter;
 import org.quartz.*;
 
 import java.util.Optional;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
+import java.util.function.Supplier;
 
 @Getter
 public class Task {
     private final String key;
-    private final Function<JobDataMap, JobDataMap> propsMapper;
+    private final Supplier<JobDataMap> propsSupplier;
     private final Boolean allowedToError;
     private final Runnable errorRecovery;
-    private final BiConsumer<JobDataMap, JobDataMap> returnPropsConsumer;
+    private final Runnable onReturnListener;
 
     @Builder
     public Task(String key,
-                Function<JobDataMap, JobDataMap> propsMapper,
+                Supplier<JobDataMap> propsSupplier,
                 Boolean allowedToError,
                 Runnable errorRecovery,
-                BiConsumer<JobDataMap, JobDataMap> returnPropsConsumer) {
+                Runnable onReturnListener) {
         this.key = Optional.ofNullable(key).orElseThrow(() -> new RuntimeException("Task key cannot be null"));
-        this.propsMapper = Optional.ofNullable(propsMapper).orElse(ignore -> new JobDataMap());
+        this.propsSupplier = Optional.ofNullable(propsSupplier).orElse(JobDataMap::new);
         this.allowedToError = Optional.ofNullable(allowedToError).orElse(false);
         this.errorRecovery = Optional.ofNullable(errorRecovery).orElse(() -> {});
-        this.returnPropsConsumer = Optional.ofNullable(returnPropsConsumer).orElse((props, jobProps) -> {});
+        this.onReturnListener = Optional.ofNullable(onReturnListener).orElse(() -> {});
     }
 
     public void triggerJob(JobExecutionContext context, Scheduler scheduler) throws SchedulerException {
-        JobUtils.triggerJob(context, scheduler, key, propsMapper);
+        JobUtils.triggerJob(context, scheduler, key, propsSupplier);
     }
 
     public static class Batch extends Task {
@@ -38,18 +37,18 @@ public class Task {
 
         @Builder(builderMethodName = "batchBuilder")
         public Batch(String key,
-                     Function<JobDataMap, JobDataMap> propsMapper,
+                     Supplier<JobDataMap> propsSupplier,
                      Boolean allowedToError,
                      Runnable errorRecovery,
-                     BiConsumer<JobDataMap, JobDataMap> returnPropsConsumer,
+                     Runnable onReturnListener,
                      Class<? extends Job> batchJobClass) {
-            super(key, propsMapper, allowedToError, errorRecovery, returnPropsConsumer);
+            super(key, propsSupplier, allowedToError, errorRecovery, onReturnListener);
             this.batchJobClass = Optional.ofNullable(batchJobClass).orElseThrow(() -> new RuntimeException("Batch task class cannot be null"));
         }
 
         @Override
         public void triggerJob(JobExecutionContext context, Scheduler scheduler) throws SchedulerException {
-            JobUtils.triggerBatchJob(context, scheduler, getKey(), getPropsMapper(), batchJobClass);
+            JobUtils.triggerBatchJob(context, scheduler, getKey(), getPropsSupplier(), batchJobClass);
         }
     }
 }

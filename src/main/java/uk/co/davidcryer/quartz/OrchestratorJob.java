@@ -27,11 +27,11 @@ public abstract class OrchestratorJob implements Job {
 
     private void handle(JobExecutionContext context) throws SchedulerException {
         Task nextTask = null;
-        var tasks = getTasks();
+        var tasks = getTasks(context);
         var lastJobKey = getLastJobKey(context);
         if (lastJobKey == null) {
             log.info("Executing {} orchestrator for first job", getJobName(context));
-            nextTask = getTasks().get(0);
+            nextTask = tasks.get(0);
         } else {
             log.info("Executing {} orchestrator with last job {}", getJobName(context), lastJobKey);
             Task lastTask = null;
@@ -52,14 +52,12 @@ public abstract class OrchestratorJob implements Job {
                 if (!lastTask.getAllowedToError()) {
                     var error = getLastJobError(context);
                     log.info("{} marked as errored with message: {}", getJobName(context), error);
+                    lastTask.getErrorRecovery().run();
                     markAsErrored(context, error);
                     return;
                 }
             } else {
-                lastTask.getReturnPropsConsumer().accept(//TODO pass context only? Or pass context through getTasks()?
-                        context.getMergedJobDataMap(),
-                        context.getJobDetail().getJobDataMap()
-                );
+                lastTask.getOnReturnListener().run();
             }
             if (nextTask == null) {
                 markAsFinished(context);
@@ -69,5 +67,5 @@ public abstract class OrchestratorJob implements Job {
         nextTask.triggerJob(context, scheduler);
     }
 
-    protected abstract List<Task> getTasks();
+    protected abstract List<Task> getTasks(JobExecutionContext context);
 }

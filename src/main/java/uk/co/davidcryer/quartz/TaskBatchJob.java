@@ -36,25 +36,26 @@ public abstract class TaskBatchJob implements Job, ReturnPropsWriter {
     }
 
     private void triggerJobs(JobExecutionContext context) throws SchedulerException {
-        for (Task task : getTasks()) {
+        for (Task task : getTasks(context)) {
             task.triggerJob(context, scheduler);
         }
     }
 
-    private void handleLastJob(JobExecutionContext context, String lastJob) throws SchedulerException {
+    private void handleLastJob(JobExecutionContext context, String lastTaskKey) throws SchedulerException {
         var jobProps = context.getJobDetail().getJobDataMap();
-        var tasks = getTasks();
+        var tasks = getTasks(context);
         var lastTask = tasks.stream()
-                .filter(t -> t.getKey().equals(lastJob))
+                .filter(t -> t.getKey().equals(lastTaskKey))
                 .findFirst()
-                .orElseThrow(() -> new JobExecutionException(getJobName(context) + " does not have task for last job " + lastJob));
+                .orElseThrow(() -> new JobExecutionException(getJobName(context) + " does not have task for last job " + lastTaskKey));
         if (isLastJobErrored(context)) {
             if (!lastTask.getAllowedToError()) {
                 var error = getLastJobError(context);
                 addErroredTaskEntry(jobProps, lastTask, error);
+                lastTask.getErrorRecovery().run();
             }
         } else {
-            lastTask.getReturnPropsConsumer().accept(context.getMergedJobDataMap(), jobProps);
+            lastTask.getOnReturnListener().run();
         }
         jobProps.put(lastTask.getKey(), true);
         if (areAllTasksComplete(jobProps, tasks)) {
@@ -76,5 +77,5 @@ public abstract class TaskBatchJob implements Job, ReturnPropsWriter {
                 .allMatch(predicate);
     }
 
-    protected abstract List<Task> getTasks();
+    protected abstract List<Task> getTasks(JobExecutionContext context);
 }
