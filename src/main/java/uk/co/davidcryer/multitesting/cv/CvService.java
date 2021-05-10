@@ -23,9 +23,9 @@ public class CvService {
             var request = objectMapper.writeValueAsString(cv);
             var jobKey = JobKey.jobKey(SaveCvOrchestratorJob.KEY, cv.getEmailAddress());
             scheduler.addJob(JobBuilder.newJob(SaveCvOrchestratorJob.class)
-                    .withIdentity(jobKey)
-                    .storeDurably()
-                    .build(),
+                            .withIdentity(jobKey)
+                            .storeDurably()
+                            .build(),
                     false);
             scheduler.triggerJob(jobKey, SaveCvOrchestratorJob.props(request));
             return true;
