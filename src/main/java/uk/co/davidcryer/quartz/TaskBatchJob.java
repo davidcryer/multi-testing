@@ -10,7 +10,7 @@ import java.util.function.Predicate;
 import static uk.co.davidcryer.quartz.JobExecutionContextUtils.getJobName;
 import static uk.co.davidcryer.quartz.JobUtils.getLastJobKey;
 import static uk.co.davidcryer.quartz.JobUtils.triggerReturnJob;
-import static uk.co.davidcryer.quartz.TaskUtils.markAsFinished;
+import static uk.co.davidcryer.quartz.TaskUtils.*;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -45,13 +45,26 @@ public abstract class TaskBatchJob implements Job, ReturnPropsWriter {
     private void handleLastJob(JobExecutionContext context, JobDataMap props, String lastJob) throws SchedulerException {
         var jobProps = context.getJobDetail().getJobDataMap();
         var tasks = getTasks();
-        var task = tasks.stream()
+        var lastTask = tasks.stream()
                 .filter(t -> t.getKey().equals(lastJob))
                 .findFirst()
                 .orElseThrow(() -> new JobExecutionException(getJobName(context) + " does not have task for last job " + lastJob));
-        jobProps.put(lastJob, task.getSuccessfulJobCondition().test(props));
-        task.getReturnPropsConsumer().accept(props, jobProps);
+        if (isErrored(props)) {
+            if (!lastTask.getAllowedToError()) {
+                var error = getError(props);
+                addErroredTaskEntry(jobProps, lastTask, error);
+            }
+        } else {
+            lastTask.getReturnPropsConsumer().accept(props, jobProps);
+        }
+        jobProps.put(lastTask.getKey(), true);
         if (areAllTasksComplete(context, tasks)) {
+            if (hasErroredTasks(jobProps)) {
+                var erroredTasks = getErroredTaskEntries(jobProps);
+                var error = String.join("\n", erroredTasks);
+                log.info("{} marked as errored with message: {}", getJobName(context), error);
+                markAsErrored(jobProps, error);
+            }
             markAsFinished(jobProps);
             triggerReturnJob(context, scheduler, this::writeToReturnProps);
         }

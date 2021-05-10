@@ -9,7 +9,7 @@ import java.util.List;
 
 import static uk.co.davidcryer.quartz.JobExecutionContextUtils.getJobName;
 import static uk.co.davidcryer.quartz.JobUtils.getLastJobKey;
-import static uk.co.davidcryer.quartz.TaskUtils.markAsFinished;
+import static uk.co.davidcryer.quartz.TaskUtils.*;
 
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @Slf4j
@@ -43,12 +43,22 @@ public abstract class OrchestratorJob implements Job {
                     if (i < tasks.size() - 1) {
                         nextTask = tasks.get(i + 1);
                     }
+                    break;
                 }
             }
             if (lastTask == null) {
                 throw new JobExecutionException("Task does not exist for last job key " + lastJobKey);
             }
-            lastTask.getReturnPropsConsumer().accept(props, context.getJobDetail().getJobDataMap());
+            if (isErrored(props)) {
+                if (!lastTask.getAllowedToError()) {
+                    var error = getError(props);
+                    markAsErrored(context.getJobDetail().getJobDataMap(), error);
+                    markAsFinished(context.getJobDetail().getJobDataMap());
+                    return;
+                }
+            } else {
+                lastTask.getReturnPropsConsumer().accept(props, context.getJobDetail().getJobDataMap());
+            }
             if (nextTask == null) {
                 markAsFinished(context.getJobDetail().getJobDataMap());
                 return;

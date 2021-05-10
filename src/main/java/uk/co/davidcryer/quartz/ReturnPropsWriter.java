@@ -5,13 +5,12 @@ import org.quartz.JobExecutionContext;
 
 import java.util.function.BiConsumer;
 
+import static uk.co.davidcryer.quartz.TaskUtils.markAsErrored;
+
 public interface ReturnPropsWriter {
     default void writeToReturnProps(JobExecutionContext context, JobDataMap returnProps) {}
 
     static BiConsumer<JobExecutionContext, JobDataMap> getErrorWriterForReturnProps(Throwable t) {
-        return (context, jobDataMap) -> {
-            jobDataMap.put("didError", true);
-            jobDataMap.put("error", t.getMessage());
-        };
+        return (context, props) -> markAsErrored(props, t.getMessage());
     }
 }

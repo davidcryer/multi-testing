@@ -139,6 +139,7 @@ class CvIntegrationSpec extends Specification {
 
         cleanup:
         kafkaHelper.get 1, 2000
+        Thread.sleep 500
         dbOps.deleteAll()
     }
 

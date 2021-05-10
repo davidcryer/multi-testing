@@ -7,7 +7,6 @@ import org.quartz.*;
 import static uk.co.davidcryer.quartz.JobExecutionContextUtils.getJobName;
 import static uk.co.davidcryer.quartz.JobUtils.triggerReturnJob;
 import static uk.co.davidcryer.quartz.ReturnPropsWriter.getErrorWriterForReturnProps;
-import static uk.co.davidcryer.quartz.TaskUtils.markAsErrored;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -22,7 +21,7 @@ public abstract class TaskJob implements Job, ReturnPropsWriter {
                 executeTask(context);
                 triggerReturnJob(context, scheduler, this::writeToReturnProps);
             } catch (Throwable t) {
-                markAsErrored(context.getTrigger().getJobDataMap());
+                log.info("{} errored with message: {}", getJobName(context), t.getMessage());
                 triggerReturnJob(context, scheduler, getErrorWriterForReturnProps(t));
             }
         } catch (SchedulerException e) {
