@@ -37,3 +37,12 @@ This is where Spock comes in, a testing framework for the Groovy JVM language. I
 * @JooqTest, used either on the database itself or on the repository/DAO
 * @WebMvcTest, used test the controller via the HTTP layer
 * Spock (Groovy) for unit testing
+
+## Specific issues of Spock-Groovy testing
+
+* Bug in IntelliJ around running individual tests - have to add library and create configuration for specific test
+* Inconsistent or overly-verbose error messages
+- does not always display error diffs
+- wiremock errors are poor (although that may be wiremock-specific, not related to Spock)
+* Tests based on string assertions can be awkward and difficult to debug if too different. They also often rely on use of .trim(), which, if forgotten, gives non-obvious error message
+* Seems to be some lazy execution of statements, but I'm not sure why. Weird errors sometimes if things not set up correctly. Was defining variable, but debugger said it was still null after that line
