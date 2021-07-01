@@ -1,1 +1,1 @@
-docker-compose up -d kafka-schema-registry db
+docker-compose up -d kafka db
