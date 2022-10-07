@@ -1,17 +1,20 @@
 package uk.co.davidcryer.quartz;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.quartz.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static uk.co.davidcryer.quartz.JobExecutionContextUtils.getJobName;
 import static uk.co.davidcryer.quartz.JobUtils.triggerReturnJob;
 import static uk.co.davidcryer.quartz.ReturnPropsWriter.getErrorWriterForReturnProps;
 
-@RequiredArgsConstructor
-@Slf4j
 public abstract class TaskJob implements Job, ReturnPropsWriter {
+    private static final Logger log = LoggerFactory.getLogger(TaskJob.class);
     private final Scheduler scheduler;
+
+    public TaskJob(Scheduler scheduler) {
+        this.scheduler = scheduler;
+    }
 
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {

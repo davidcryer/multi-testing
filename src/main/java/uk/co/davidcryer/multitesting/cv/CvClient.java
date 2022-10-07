@@ -50,12 +50,7 @@ public class CvClient {
     }
 }
 
-@Jacksonized
-@JsonIgnoreProperties(ignoreUnknown = true)
-@Data
-@AllArgsConstructor
-@Builder
-class CvClientRequest {
+record CvClientRequest {
     private String id;
     private LocalDateTime created;
     private String name;

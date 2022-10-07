@@ -1,8 +1,8 @@
 package uk.co.davidcryer.quartz;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.quartz.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.function.Predicate;
@@ -13,12 +13,15 @@ import static uk.co.davidcryer.quartz.JobUtils.triggerReturnJob;
 import static uk.co.davidcryer.quartz.ReturnPropsWriter.getErrorWriterForReturnProps;
 import static uk.co.davidcryer.quartz.TaskUtils.*;
 
-@RequiredArgsConstructor
-@Slf4j
 @DisallowConcurrentExecution
 @PersistJobDataAfterExecution
 public abstract class TaskBatchJob implements Job, ReturnPropsWriter {
+    private static final Logger log = LoggerFactory.getLogger(TaskBatchJob.class);
     private final Scheduler scheduler;
+
+    public TaskBatchJob(Scheduler scheduler) {
+        this.scheduler = scheduler;
+    }
 
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {

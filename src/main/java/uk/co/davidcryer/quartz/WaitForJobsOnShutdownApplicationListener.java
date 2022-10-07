@@ -1,15 +1,18 @@
 package uk.co.davidcryer.quartz;
 
-import lombok.RequiredArgsConstructor;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextClosedEvent;
 
-@RequiredArgsConstructor
 public class WaitForJobsOnShutdownApplicationListener implements ApplicationListener<ContextClosedEvent> {
     private final Scheduler scheduler;
     private final WaitForJobsOnShutdownJobListener jobListener;
+
+    public WaitForJobsOnShutdownApplicationListener(Scheduler scheduler, WaitForJobsOnShutdownJobListener jobListener) {
+        this.scheduler = scheduler;
+        this.jobListener = jobListener;
+    }
 
     @Override
     public void onApplicationEvent(ContextClosedEvent contextClosedEvent) {

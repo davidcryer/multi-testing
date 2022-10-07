@@ -8,7 +8,7 @@
 	<name>multi-testing</name>
 	<description>Demo project for new application architecture</description>
 	<properties>
-		<java.version>11</java.version>
+		<java.version>17</java.version>
 		<cucumber.version>6.8.2</cucumber.version>
 		<db.driver>org.postgresql.Driver</db.driver>
 		<db.username>demo</db.username>
@@ -132,12 +132,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<version>1.18.16</version>
-		</dependency>
-
-		<dependency>
 			<groupId>org.codehaus.groovy</groupId>
 			<artifactId>groovy</artifactId>
 			<version>3.0.4</version>
@@ -212,14 +206,6 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
-				<configuration>
-					<excludes>
-						<exclude>
-							<groupId>org.projectlombok</groupId>
-							<artifactId>lombok</artifactId>
-						</exclude>
-					</excludes>
-				</configuration>
 			</plugin>
 
 			<plugin>

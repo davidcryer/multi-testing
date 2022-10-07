@@ -31,7 +31,7 @@ public class SaveCvOrchestratorJob extends OrchestratorJob {
                             StoreCvTaskJob.withReturnProps(props, cvId -> jobProps.put("cvId", cvId));
                         })
                         .build(),
-                Task.Batch.batchBuilder()
+                Task.batchBuilder()
                         .key(PublishCvTaskJob.KEY)
                         .propsSupplier(pass(jobProps, "cvId", PublishCvTaskJob::props))
                         .batchJobClass(PublishCvTaskJob.class)

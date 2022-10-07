@@ -1,12 +1,12 @@
 package uk.co.davidcryer.quartz;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.listeners.JobListenerSupport;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Set;
 
@@ -14,11 +14,15 @@ import static uk.co.davidcryer.quartz.JobExecutionContextUtils.getJobName;
 import static uk.co.davidcryer.quartz.TaskUtils.isErrored;
 import static uk.co.davidcryer.quartz.TaskUtils.isFinished;
 
-@RequiredArgsConstructor
-@Slf4j
 public class DeleteOldJobsListener extends JobListenerSupport {
+    private static final Logger log = LoggerFactory.getLogger(DeleteOldJobsListener.class);
     private final Scheduler scheduler;
     private final Set<String> jobsRequiringDeletion;
+
+    public DeleteOldJobsListener(Scheduler scheduler, Set<String> jobsRequiringDeletion) {
+        this.scheduler = scheduler;
+        this.jobsRequiringDeletion = jobsRequiringDeletion;
+    }
 
     @Override
     public String getName() {

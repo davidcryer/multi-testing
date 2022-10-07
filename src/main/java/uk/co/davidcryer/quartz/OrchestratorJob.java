@@ -1,9 +1,8 @@
 package uk.co.davidcryer.quartz;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.quartz.*;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -11,10 +10,13 @@ import static uk.co.davidcryer.quartz.JobExecutionContextUtils.getJobName;
 import static uk.co.davidcryer.quartz.JobUtils.getLastJobKey;
 import static uk.co.davidcryer.quartz.TaskUtils.*;
 
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
-@Slf4j
 public abstract class OrchestratorJob implements Job {
+    private static final Logger log = LoggerFactory.getLogger(OrchestratorJob.class);
     private final Scheduler scheduler;
+
+    public OrchestratorJob(Scheduler scheduler) {
+        this.scheduler = scheduler;
+    }
 
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
